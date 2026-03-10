@@ -1,0 +1,246 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ farm.name }} Analytics - FarmSphere{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2><i class="fas fa-chart-line text-primary"></i> {{ farm.name }} Analytics</h2>
+                    <p class="text-muted">{{ farm.address }}</p>
+                </div>
+                <a href="{% url 'farm_list' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to Farms
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Farm Overview -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i class="fas fa-map fa-2x text-success mb-2"></i>
+                    <h4>{{ farm.size_acres }}</h4>
+                    <p class="text-muted">Total Acres</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i class="fas fa-seedling fa-2x text-info mb-2"></i>
+                    <h4>{{ crops.count }}</h4>
+                    <p class="text-muted">Active Crops</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i class="fas fa-thermometer-half fa-2x text-warning mb-2"></i>
+                    <h4>{{ sensor_data.count }}</h4>
+                    <p class="text-muted">Sensor Readings</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i class="fas fa-lightbulb fa-2x text-primary mb-2"></i>
+                    <h4>{{ recommendations.count }}</h4>
+                    <p class="text-muted">Recommendations</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Crop Health Status -->
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-heartbeat"></i> Crop Health Status</h5>
+                </div>
+                <div class="card-body">
+                    {% if health_summary %}
+                        {% for crop, status in health_summary.items %}
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span>{{ crop }}</span>
+                            <span class="badge bg-{% if status == 'healthy' %}success{% elif status == 'at_risk' %}warning{% else %}danger{% endif %}">
+                                {{ status|title }}
+                            </span>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted">No crops planted yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Recommendations -->
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-lightbulb"></i> Recent Recommendations</h5>
+                </div>
+                <div class="card-body">
+                    {% if recommendations %}
+                        {% for rec in recommendations %}
+                        <div class="border-bottom pb-2 mb-2">
+                            <h6>{{ rec.title }}</h6>
+                            <p class="small text-muted">{{ rec.description|truncatechars:100 }}</p>
+                            <small class="text-muted">{{ rec.created_at|date:"M d, Y" }}</small>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted">No recommendations available.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sensor Data Chart -->
+    {% if sensor_data %}
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-chart-area"></i> Environmental Conditions</h5>
+                </div>
+                <div class="card-body">
+                    <div id="sensorChart" style="height: 400px;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Crops Table -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-seedling"></i> Crop Details</h5>
+                </div>
+                <div class="card-body">
+                    {% if crops %}
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Crop Type</th>
+                                        <th>Planting Date</th>
+                                        <th>Expected Harvest</th>
+                                        <th>Area (Acres)</th>
+                                        <th>Health Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for crop in crops %}
+                                    <tr>
+                                        <td>{{ crop.get_crop_type_display }}</td>
+                                        <td>{{ crop.planting_date|date:"M d, Y" }}</td>
+                                        <td>{{ crop.expected_harvest|date:"M d, Y" }}</td>
+                                        <td>{{ crop.area_acres }}</td>
+                                        <td>
+                                            <span class="badge bg-{% if crop.health_status == 'healthy' %}success{% elif crop.health_status == 'at_risk' %}warning{% else %}danger{% endif %}">
+                                                {{ crop.get_health_status_display }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-eye"></i> View
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-seedling fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">No Crops Planted</h5>
+                            <p class="text-muted">Add crops to start tracking their health and progress.</p>
+                            <button class="btn btn-success">
+                                <i class="fas fa-plus"></i> Add Crop
+                            </button>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Sample sensor data for demo
+const sensorData = [
+    {x: '2024-02-01', temperature: 22, humidity: 65, soil_moisture: 45},
+    {x: '2024-02-02', temperature: 24, humidity: 68, soil_moisture: 42},
+    {x: '2024-02-03', temperature: 26, humidity: 72, soil_moisture: 38},
+    {x: '2024-02-04', temperature: 23, humidity: 70, soil_moisture: 40},
+    {x: '2024-02-05', temperature: 25, humidity: 66, soil_moisture: 44},
+    {x: '2024-02-06', temperature: 27, humidity: 74, soil_moisture: 36},
+    {x: '2024-02-07', temperature: 24, humidity: 69, soil_moisture: 41}
+];
+
+// Create sensor chart if Plotly is available
+if (typeof Plotly !== 'undefined') {
+    const temperatureTrace = {
+        x: sensorData.map(d => d.x),
+        y: sensorData.map(d => d.temperature),
+        type: 'scatter',
+        mode: 'lines+markers',
+        name: 'Temperature (°C)',
+        line: {color: '#ff6b6b'}
+    };
+
+    const humidityTrace = {
+        x: sensorData.map(d => d.x),
+        y: sensorData.map(d => d.humidity),
+        type: 'scatter',
+        mode: 'lines+markers',
+        name: 'Humidity (%)',
+        yaxis: 'y2',
+        line: {color: '#4ecdc4'}
+    };
+
+    const soilMoistureTrace = {
+        x: sensorData.map(d => d.x),
+        y: sensorData.map(d => d.soil_moisture),
+        type: 'scatter',
+        mode: 'lines+markers',
+        name: 'Soil Moisture (%)',
+        yaxis: 'y2',
+        line: {color: '#45b7d1'}
+    };
+
+    const layout = {
+        title: 'Environmental Conditions Over Time',
+        xaxis: {title: 'Date'},
+        yaxis: {
+            title: 'Temperature (°C)',
+            side: 'left'
+        },
+        yaxis2: {
+            title: 'Percentage (%)',
+            side: 'right',
+            overlaying: 'y'
+        },
+        legend: {x: 0, y: 1}
+    };
+
+    Plotly.newPlot('sensorChart', [temperatureTrace, humidityTrace, soilMoistureTrace], layout, {responsive: true});
+}
+</script>
+{% endblock %}

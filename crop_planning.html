@@ -1,0 +1,371 @@
+{% extends 'base.html' %}
+
+{% block title %}Crop Planning Dashboard - Krushirakshak{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-12">
+            <h2 class="mb-2">
+                <i class="fas fa-calendar-alt text-success"></i> Comprehensive Crop Planning
+            </h2>
+            <p class="lead text-muted mb-1">Complete crop planning with soil analysis, fertilizer schedule, and care timeline</p>
+            
+            <!-- Plan Name Display -->
+            <div class="mb-4">
+                <input type="text" class="form-control form-control-lg" id="mainPlanName" placeholder="Enter your plan name here (e.g., Summer Rice 2026, Kharif Cotton Plan)" style="border: none; border-bottom: 3px solid #28a745; border-radius: 0; font-size: 1.5rem; font-weight: 600; background: transparent;">
+                <small class="text-muted"><i class="fas fa-info-circle"></i> This name will be used to identify your crop plan</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Input Form -->
+        <div class="col-lg-4">
+            <div class="card shadow-sm sticky-top" style="top: 100px;">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fas fa-edit"></i> Planning Details</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label class="form-label"><strong>Plan Name/Title</strong></label>
+                            <input type="text" class="form-control" name="plan_name" placeholder="e.g., Summer Rice 2026" required>
+                            <small class="text-muted">Give a name to identify this plan</small>
+                        </div>
+                        
+                        <hr>
+                        <h6 class="text-success mb-3"><i class="fas fa-leaf"></i> Crop Selection</h6>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Select Crop (Optional)</label>
+                            <select class="form-control" name="crop_name" id="cropName">
+                                <option value="">Get crop recommendations</option>
+                                <option value="rice">Rice</option>
+                                <option value="wheat">Wheat</option>
+                                <option value="cotton">Cotton</option>
+                                <option value="tomato">Tomato</option>
+                                <option value="corn">Corn/Maize</option>
+                                <option value="potato">Potato</option>
+                                <option value="soybean">Soybean</option>
+                                <option value="sugarcane">Sugarcane</option>
+                            </select>
+                            <small class="text-muted">Leave empty to get crop recommendations</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Farm Area (hectares)</label>
+                            <input type="number" class="form-control" name="area_hectares" value="1.0" step="0.1" min="0.1" required>
+                        </div>
+
+                        <hr>
+                        <h6 class="text-success mb-3"><i class="fas fa-mountain"></i> Soil Analysis</h6>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Soil Type</label>
+                            <select class="form-control" name="soil_type" required>
+                                <option value="">Select Soil Type</option>
+                                <option value="clay">Clay</option>
+                                <option value="loamy">Loamy</option>
+                                <option value="sandy-loam">Sandy Loam</option>
+                                <option value="clay-loam">Clay Loam</option>
+                                <option value="black">Black Soil</option>
+                                <option value="red">Red Soil</option>
+                            </select>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-4 mb-3">
+                                <label class="form-label">N (kg/ha)</label>
+                                <input type="number" class="form-control" name="soil_n" value="250" required>
+                            </div>
+                            <div class="col-4 mb-3">
+                                <label class="form-label">P (kg/ha)</label>
+                                <input type="number" class="form-control" name="soil_p" value="15" required>
+                            </div>
+                            <div class="col-4 mb-3">
+                                <label class="form-label">K (kg/ha)</label>
+                                <input type="number" class="form-control" name="soil_k" value="150" required>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Soil pH</label>
+                            <input type="number" class="form-control" name="soil_ph" value="6.5" step="0.1" min="4" max="9" required>
+                        </div>
+
+                        <hr>
+                        <h6 class="text-success mb-3"><i class="fas fa-cloud-sun"></i> Climate</h6>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Season</label>
+                            <select class="form-control" name="season" required>
+                                <option value="">Select Season</option>
+                                <option value="kharif">Kharif (Monsoon)</option>
+                                <option value="rabi">Rabi (Winter)</option>
+                                <option value="summer">Summer</option>
+                            </select>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-4 mb-3">
+                                <label class="form-label">Temp (°C)</label>
+                                <input type="number" class="form-control" name="temperature" value="28" required>
+                            </div>
+                            <div class="col-4 mb-3">
+                                <label class="form-label">Humidity (%)</label>
+                                <input type="number" class="form-control" name="humidity" value="65" required>
+                            </div>
+                            <div class="col-4 mb-3">
+                                <label class="form-label">Rain (mm)</label>
+                                <input type="number" class="form-control" name="rainfall" value="100" required>
+                            </div>
+                        </div>
+
+                        <hr>
+                        <div class="mb-3">
+                            <label class="form-label">Fertilizer Preference</label>
+                            <select class="form-control" name="fertilizer_preference">
+                                <option value="both">Both Organic & Chemical</option>
+                                <option value="organic">Organic Only</option>
+                                <option value="chemical">Chemical Only</option>
+                            </select>
+                        </div>
+
+                        {% if user.is_authenticated %}
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="save_plan" value="yes" id="savePlan" checked>
+                                <label class="form-check-label" for="savePlan">
+                                    Save this plan
+                                </label>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        <button type="submit" class="btn btn-success w-100 btn-lg">
+                            <i class="fas fa-magic"></i> Generate Plan
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results -->
+        <div class="col-lg-8">
+            {% if plan_result %}
+                <!-- Alerts -->
+                {% if plan_result.alerts %}
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-warning text-dark">
+                        <h5 class="mb-0"><i class="fas fa-exclamation-triangle"></i> Soil Health Alerts</h5>
+                    </div>
+                    <div class="card-body">
+                        {% for alert in plan_result.alerts %}
+                        <div class="alert alert-{{ alert.type }} mb-2">
+                            <strong>{{ alert.message }}</strong>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Crop Recommendations -->
+                {% if plan_result.crop_recommendations %}
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class="fas fa-seedling"></i> Recommended Crops</h5>
+                    </div>
+                    <div class="card-body">
+                        {% for crop in plan_result.crop_recommendations %}
+                        <div class="card mb-3 border-success">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h5 class="text-success mb-0">{{ crop.crop }}</h5>
+                                    <span class="badge bg-success">{{ crop.score }}% Match</span>
+                                </div>
+                                <p class="mb-2"><strong>Duration:</strong> {{ crop.duration }} days</p>
+                                <p class="mb-0"><strong>Reasons:</strong> {{ crop.reasons|join:", " }}</p>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Selected Crop Info -->
+                {% if plan_result.selected_crop %}
+                <div class="card shadow-sm mb-4 border-success">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0"><i class="fas fa-leaf"></i> Selected Crop: {{ plan_result.selected_crop.crop }}</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row text-center">
+                            <div class="col-md-6">
+                                <h4 class="text-success">{{ plan_result.total_duration }} days</h4>
+                                <p class="text-muted">Total Duration</p>
+                            </div>
+                            <div class="col-md-6">
+                                <h4 class="text-primary">{{ plan_result.expected_harvest }}</h4>
+                                <p class="text-muted">Expected Harvest</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Complete Care Timeline -->
+                {% if plan_result.care_timeline %}
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0"><i class="fas fa-calendar-check"></i> Complete Care Timeline</h5>
+                    </div>
+                    <div class="card-body">
+                        {% for stage in plan_result.care_timeline %}
+                        <div class="card mb-3 border-info">
+                            <div class="card-header bg-light">
+                                <h6 class="mb-0">
+                                    <i class="fas fa-circle text-info"></i> 
+                                    Stage {{ forloop.counter }}: {{ stage.stage|title }}
+                                    <span class="badge bg-info float-end">{{ stage.duration_days }} days</span>
+                                </h6>
+                                <small class="text-muted">{{ stage.start_date }} to {{ stage.end_date }}</small>
+                            </div>
+                            <div class="card-body">
+                                <!-- Fertilizer for this stage -->
+                                {% if stage.fertilizer %}
+                                <h6 class="text-success"><i class="fas fa-flask"></i> Fertilizer Application</h6>
+                                <div class="row mb-3">
+                                    <div class="col-md-4">
+                                        <div class="border rounded p-2 bg-light text-center">
+                                            <strong>N:</strong> {{ stage.fertilizer.npk_required.N }} kg/ha
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="border rounded p-2 bg-light text-center">
+                                            <strong>P:</strong> {{ stage.fertilizer.npk_required.P }} kg/ha
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="border rounded p-2 bg-light text-center">
+                                            <strong>K:</strong> {{ stage.fertilizer.npk_required.K }} kg/ha
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {% if stage.fertilizer.organic_recommendation %}
+                                <div class="alert alert-success mb-2">
+                                    <strong>Organic:</strong> {{ stage.fertilizer.organic_recommendation }}
+                                </div>
+                                {% endif %}
+
+                                {% if stage.fertilizer.chemical_recommendation %}
+                                <div class="alert alert-info mb-3">
+                                    <strong>Chemical:</strong> {{ stage.fertilizer.chemical_recommendation }}
+                                </div>
+                                {% endif %}
+                                {% endif %}
+
+                                <!-- Care Tips -->
+                                {% if stage.care_tips %}
+                                <h6 class="text-warning"><i class="fas fa-lightbulb"></i> Care Instructions</h6>
+                                <ul class="mb-0">
+                                    {% for tip in stage.care_tips %}
+                                    <li>{{ tip }}</li>
+                                    {% endfor %}
+                                </ul>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+            {% else %}
+                <!-- Default State -->
+                <div class="card shadow-sm">
+                    <div class="card-body text-center py-5">
+                        <i class="fas fa-calendar-alt fa-5x text-success mb-4" style="opacity: 0.3;"></i>
+                        <h4 class="text-muted mb-3">Comprehensive Crop Planning</h4>
+                        <p class="text-muted mb-4">Get a complete plan from planting to harvest</p>
+                        
+                        <div class="row text-start">
+                            <div class="col-md-6">
+                                <h6 class="text-success"><i class="fas fa-check-circle"></i> What You'll Get:</h6>
+                                <ul class="text-muted">
+                                    <li>Crop recommendations based on soil & climate</li>
+                                    <li>Complete fertilizer schedule for all stages</li>
+                                    <li>Stage-by-stage care instructions</li>
+                                    <li>Expected harvest date</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h6 class="text-success"><i class="fas fa-flask"></i> Detailed Information:</h6>
+                                <ul class="text-muted">
+                                    <li>NPK requirements for each stage</li>
+                                    <li>Organic & chemical fertilizer options</li>
+                                    <li>Application timing & methods</li>
+                                    <li>Soil health alerts</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+
+            <!-- Saved Plans -->
+            {% if saved_plans %}
+            <div class="card shadow-sm mt-4">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0"><i class="fas fa-history"></i> Your Saved Plans</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group">
+                        {% for plan in saved_plans %}
+                        <a href="{% url 'crop_plan_detail' plan.id %}" class="list-group-item list-group-item-action">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1"><i class="fas fa-leaf text-success"></i> {{ plan.crop_name|title }}</h6>
+                                    <small class="text-muted">
+                                        {{ plan.soil_type|title }} soil | {{ plan.season|title }} season | {{ plan.area_hectares }} ha
+                                    </small>
+                                </div>
+                                <small class="text-muted">{{ plan.created_at|date:"M d, Y" }}</small>
+                            </div>
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Sync main plan name with form field
+const mainPlanName = document.getElementById('mainPlanName');
+const formPlanName = document.querySelector('input[name="plan_name"]');
+
+if (mainPlanName && formPlanName) {
+    mainPlanName.addEventListener('input', function() {
+        formPlanName.value = this.value;
+    });
+    
+    formPlanName.addEventListener('input', function() {
+        mainPlanName.value = this.value;
+    });
+}
+
+document.querySelector('form').addEventListener('submit', function(e) {
+    const button = this.querySelector('button[type="submit"]');
+    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+    button.disabled = true;
+});
+</script>
+{% endblock %}

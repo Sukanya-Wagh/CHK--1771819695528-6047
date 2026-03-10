@@ -1,0 +1,173 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <a href="{% url 'fertilizer_dashboard' %}" class="btn btn-outline-secondary mb-2">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </a>
+            <h1>🌤️ Weather-Based Fertilizer Advice</h1>
+        </div>
+        {% if not user.is_authenticated %}
+        <div>
+            <a href="{% url 'login' %}" class="btn btn-outline-primary me-2">Login</a>
+            <a href="{% url 'register' %}" class="btn btn-primary">Register</a>
+        </div>
+        {% endif %}
+    </div>
+    
+    <div class="row">
+        <div class="col-md-5">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5>Check Weather Conditions</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Location</label>
+                            <input type="text" name="location" class="form-control" placeholder="e.g., Delhi, Mumbai" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Fertilizer Type</label>
+                            <select name="fertilizer_type" class="form-control" required>
+                                <option value="Urea">Urea</option>
+                                <option value="DAP">DAP</option>
+                                <option value="NPK">NPK Complex</option>
+                                <option value="MOP">MOP</option>
+                                <option value="Foliar Spray">Foliar Spray</option>
+                            </select>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-lg w-100">Get Weather Advice</button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card mt-3">
+                <div class="card-body">
+                    <h6>Weather Considerations</h6>
+                    <ul class="small">
+                        <li>Avoid application before heavy rain</li>
+                        <li>High winds affect spray application</li>
+                        <li>High temperature increases volatilization</li>
+                        <li>Soil moisture is important for absorption</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-7">
+            {% if advice %}
+            <div class="card border-{% if advice.warning_message %}warning{% else %}success{% endif %}">
+                <div class="card-header bg-{% if advice.warning_message %}warning{% else %}success{% endif %} text-{% if advice.warning_message %}dark{% else %}white{% endif %}">
+                    <h5>Weather Forecast & Advice</h5>
+                    <small>{{ advice.location }}</small>
+                </div>
+                <div class="card-body">
+                    {% if advice.warning_message %}
+                    <div class="alert alert-warning">
+                        <h5>{{ advice.warning_message }}</h5>
+                    </div>
+                    {% endif %}
+
+                    <div class="row mb-4">
+                        <div class="col-6">
+                            <div class="card bg-light">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-cloud fa-3x text-primary mb-2"></i>
+                                    <h6>Weather</h6>
+                                    <h5>{{ advice.weather_condition }}</h5>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="card bg-light">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-thermometer-half fa-3x text-danger mb-2"></i>
+                                    <h6>Temperature</h6>
+                                    <h5>{{ advice.temperature|floatformat:1 }}°C</h5>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card bg-light mb-3">
+                        <div class="card-body">
+                            <h6>Rainfall Forecast</h6>
+                            <p class="mb-0">{{ advice.rainfall_forecast }}</p>
+                        </div>
+                    </div>
+
+                    <div class="card bg-light mb-3">
+                        <div class="card-body">
+                            <h6>Fertilizer: {{ advice.fertilizer_type }}</h6>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-info">
+                        <h6>Recommendation</h6>
+                        <p class="mb-0">{{ advice.recommendation }}</p>
+                    </div>
+
+                    {% if advice.best_application_date %}
+                    <div class="alert alert-success">
+                        <h6>Best Application Date</h6>
+                        <h4 class="mb-0">{{ advice.best_application_date|date:"F d, Y" }}</h4>
+                    </div>
+                    {% endif %}
+
+                    <div class="card bg-light mt-3">
+                        <div class="card-body">
+                            <h6>💡 General Tips</h6>
+                            <ul class="small mb-0">
+                                <li>Apply fertilizers during early morning or evening</li>
+                                <li>Ensure soil has adequate moisture</li>
+                                <li>Avoid application during extreme weather</li>
+                                <li>Follow recommended dosage for best results</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="card">
+                <div class="card-body text-center">
+                    <i class="fas fa-cloud-sun fa-3x text-muted mb-3"></i>
+                    <p class="text-muted">Enter location and fertilizer type to get weather-based advice</p>
+                    
+                    <div class="alert alert-info text-start mt-3">
+                        <h6>Why Weather Matters</h6>
+                        <p class="small mb-0">Weather conditions significantly impact fertilizer effectiveness. Rain can cause nutrient leaching, high temperatures increase volatilization, and wind affects spray application. Our system analyzes weather forecasts to recommend the optimal time for fertilizer application.</p>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if recent_advice %}
+    <div class="mt-4">
+        <h4>Recent Weather Advice</h4>
+        <div class="row">
+            {% for adv in recent_advice %}
+            <div class="col-md-6 mb-3">
+                <div class="card">
+                    <div class="card-body">
+                        <h6>{{ adv.location }} - {{ adv.fertilizer_type }}</h6>
+                        <p class="small mb-2">{{ adv.weather_condition }} | {{ adv.temperature|floatformat:1 }}°C</p>
+                        <p class="small text-muted mb-0">{{ adv.recommendation|truncatewords:15 }}</p>
+                        <small class="text-muted">{{ adv.created_at|date:"M d, Y" }}</small>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

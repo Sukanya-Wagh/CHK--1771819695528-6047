@@ -1,0 +1,161 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <a href="{% url 'fertilizer_dashboard' %}" class="btn btn-outline-secondary mb-2">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </a>
+            <h1>💊 Fertilizer Recommendation</h1>
+        </div>
+        {% if not user.is_authenticated %}
+        <div>
+            <a href="{% url 'login' %}" class="btn btn-outline-primary me-2">Login</a>
+            <a href="{% url 'register' %}" class="btn btn-primary">Register</a>
+        </div>
+        {% endif %}
+    </div>
+    
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5>Input Details</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Crop Name</label>
+                            <select name="crop_name" class="form-control" required>
+                                <option value="">Select Crop</option>
+                                {% for crop in crop_choices %}
+                                <option value="{{ crop }}">{{ crop|title }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Soil Type</label>
+                            <select name="soil_type" class="form-control" required>
+                                <option value="loamy">Loamy</option>
+                                <option value="sandy">Sandy</option>
+                                <option value="clay">Clay</option>
+                                <option value="silt">Silt</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Crop Growth Stage</label>
+                            <select name="growth_stage" class="form-control" required>
+                                <option value="seedling">Seedling</option>
+                                <option value="vegetative">Vegetative</option>
+                                <option value="flowering">Flowering</option>
+                                <option value="fruiting">Fruiting</option>
+                                <option value="maturity">Maturity</option>
+                            </select>
+                        </div>
+
+                        <h6 class="mt-4">Soil Nutrient Levels (kg/ha)</h6>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Nitrogen (N)</label>
+                            <input type="number" name="nitrogen" class="form-control" step="0.1" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Phosphorus (P)</label>
+                            <input type="number" name="phosphorus" class="form-control" step="0.1" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Potassium (K)</label>
+                            <input type="number" name="potassium" class="form-control" step="0.1" required>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-lg w-100">Get Recommendation</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            {% if recommendation %}
+            <div class="card border-success">
+                <div class="card-header bg-success text-white">
+                    <h5>✅ Recommendation Result</h5>
+                </div>
+                <div class="card-body">
+                    <h4 class="text-success">{{ recommendation.crop_name }}</h4>
+                    <p><strong>Growth Stage:</strong> {{ recommendation.get_growth_stage_display }}</p>
+                    
+                    <hr>
+                    
+                    <h5 class="text-primary">Recommended Fertilizer</h5>
+                    <h3>{{ recommendation.fertilizer_type }}</h3>
+                    <p class="lead">NPK Ratio: <strong>{{ recommendation.npk_ratio }}</strong></p>
+                    
+                    <hr>
+                    
+                    <div class="alert alert-warning">
+                        <strong>Deficiency Detected:</strong> {{ recommendation.deficiency_detected }}
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <strong>Reason:</strong> {{ recommendation.reason }}
+                    </div>
+
+                    <h6 class="mt-3">Soil Nutrient Status</h6>
+                    <ul>
+                        <li>Nitrogen: {{ recommendation.current_nitrogen }} kg/ha</li>
+                        <li>Phosphorus: {{ recommendation.current_phosphorus }} kg/ha</li>
+                        <li>Potassium: {{ recommendation.current_potassium }} kg/ha</li>
+                    </ul>
+                </div>
+            </div>
+            {% else %}
+            <div class="card">
+                <div class="card-body text-center">
+                    <i class="fas fa-info-circle fa-3x text-muted mb-3"></i>
+                    <p class="text-muted">Fill in the form to get fertilizer recommendations</p>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if recent_recommendations %}
+    <div class="mt-4">
+        <h4>Recent Recommendations</h4>
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Crop</th>
+                        <th>Stage</th>
+                        <th>Fertilizer</th>
+                        <th>NPK</th>
+                        <th>Deficiency</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for rec in recent_recommendations %}
+                    <tr>
+                        <td>{{ rec.crop_name }}</td>
+                        <td>{{ rec.get_growth_stage_display }}</td>
+                        <td>{{ rec.fertilizer_type }}</td>
+                        <td>{{ rec.npk_ratio }}</td>
+                        <td>{{ rec.deficiency_detected }}</td>
+                        <td>{{ rec.created_at|date:"M d" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

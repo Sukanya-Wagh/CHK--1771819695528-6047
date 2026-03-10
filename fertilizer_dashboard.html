@@ -1,0 +1,190 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>🌱 Fertilizer Management System</h1>
+        {% if not user.is_authenticated %}
+        <div>
+            <a href="{% url 'login' %}" class="btn btn-outline-primary me-2">
+                <i class="fas fa-sign-in-alt"></i> Login
+            </a>
+            <a href="{% url 'register' %}" class="btn btn-primary">
+                <i class="fas fa-user-plus"></i> Register
+            </a>
+        </div>
+        {% else %}
+        <div>
+            <span class="badge bg-success p-2">
+                <i class="fas fa-user"></i> {{ user.username }}
+            </span>
+        </div>
+        {% endif %}
+    </div>
+    
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card text-white bg-success mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">Total Recommendations</h5>
+                    <h2>{{ total_recommendations }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-white bg-info mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">Soil Analyses</h5>
+                    <h2>{{ total_analyses }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-white bg-warning mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">Fertilizer Schedules</h5>
+                    <h2>{{ total_schedules }}</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <h3 class="mb-3">All Fertilizer Features</h3>
+    <div class="row">
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card h-100 shadow-sm hover-card">
+                <div class="card-body text-center">
+                    <div class="feature-icon mb-3">
+                        <i class="fas fa-flask fa-3x text-primary"></i>
+                    </div>
+                    <h5 class="card-title">💊 Fertilizer Recommendation</h5>
+                    <p class="card-text">Get AI-powered fertilizer recommendations based on crop type, soil nutrients (N, P, K), and growth stage.</p>
+                    <a href="{% url 'fertilizer_recommendation' %}" class="btn btn-primary">Get Recommendation</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card h-100 shadow-sm hover-card">
+                <div class="card-body text-center">
+                    <div class="feature-icon mb-3">
+                        <i class="fas fa-calculator fa-3x text-info"></i>
+                    </div>
+                    <h5 class="card-title">⚖️ Quantity Calculator</h5>
+                    <p class="card-text">Calculate exact fertilizer quantity needed based on your farm area (hectare/acre) and crop type.</p>
+                    <a href="{% url 'fertilizer_quantity' %}" class="btn btn-info">Calculate Quantity</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card h-100 shadow-sm hover-card">
+                <div class="card-body text-center">
+                    <div class="feature-icon mb-3">
+                        <i class="fas fa-search fa-3x text-warning"></i>
+                    </div>
+                    <h5 class="card-title">🔍 Deficiency Detection</h5>
+                    <p class="card-text">Detect nutrient deficiencies (N, P, K, Ca, Mg, Fe, Zn) from leaf images or soil test data.</p>
+                    <a href="{% url 'nutrient_deficiency' %}" class="btn btn-warning">Detect Deficiency</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card h-100 shadow-sm hover-card">
+                <div class="card-body text-center">
+                    <div class="feature-icon mb-3">
+                        <i class="fas fa-calendar-check fa-3x text-success"></i>
+                    </div>
+                    <h5 class="card-title">📅 Fertilizer Schedule</h5>
+                    <p class="card-text">Generate a complete fertilizer application schedule for your crop lifecycle with specific dates.</p>
+                    <a href="{% url 'fertilizer_schedule' %}" class="btn btn-success">Create Schedule</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card h-100 shadow-sm hover-card">
+                <div class="card-body text-center">
+                    <div class="feature-icon mb-3">
+                        <i class="fas fa-leaf fa-3x text-success"></i>
+                    </div>
+                    <h5 class="card-title">🌿 Organic Fertilizers</h5>
+                    <p class="card-text">Get suggestions for organic fertilizer options (Vermicompost, Neem Cake, Compost) suitable for your crops.</p>
+                    <a href="{% url 'organic_fertilizer' %}" class="btn btn-success">View Organic Options</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card h-100 shadow-sm hover-card">
+                <div class="card-body text-center">
+                    <div class="feature-icon mb-3">
+                        <i class="fas fa-vial fa-3x text-danger"></i>
+                    </div>
+                    <h5 class="card-title">🧪 Soil Analysis</h5>
+                    <p class="card-text">Analyze soil nutrient levels (N, P, K) and get detailed health reports with recommendations.</p>
+                    <a href="{% url 'soil_analysis' %}" class="btn btn-danger">Analyze Soil</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card h-100 shadow-sm hover-card">
+                <div class="card-body text-center">
+                    <div class="feature-icon mb-3">
+                        <i class="fas fa-cloud-sun fa-3x text-primary"></i>
+                    </div>
+                    <h5 class="card-title">🌤️ Weather-Based Advice</h5>
+                    <p class="card-text">Get fertilizer application advice based on weather forecasts (rain, temperature, wind).</p>
+                    <a href="{% url 'weather_fertilizer' %}" class="btn btn-primary">Check Weather</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .hover-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .hover-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2) !important;
+        }
+        .feature-icon {
+            padding: 20px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 50%;
+            display: inline-block;
+        }
+    </style>
+
+    {% if recent_recommendations %}
+    <h3 class="mt-4 mb-3">Recent Recommendations</h3>
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Crop</th>
+                    <th>Growth Stage</th>
+                    <th>Fertilizer</th>
+                    <th>NPK Ratio</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for rec in recent_recommendations %}
+                <tr>
+                    <td>{{ rec.crop_name }}</td>
+                    <td>{{ rec.get_growth_stage_display }}</td>
+                    <td>{{ rec.fertilizer_type }}</td>
+                    <td>{{ rec.npk_ratio }}</td>
+                    <td>{{ rec.created_at|date:"M d, Y" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

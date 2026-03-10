@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Orders - {{ stall.stall_name }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2><i class="fas fa-tasks text-primary"></i> Manage Orders</h2>
+                    <p class="text-muted">{{ stall.stall_name }}</p>
+                </div>
+                <a href="{% url 'stall_dashboard' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            {% if orders %}
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    {% for order in orders %}
+                    <div class="card mb-3 border-{% if order.status == 'pending' %}warning{% elif order.status == 'confirmed' %}info{% elif order.status == 'completed' %}success{% else %}danger{% endif %}">
+                        <div class="card-header">
+                            <div class="row align-items-center">
+                                <div class="col-md-8">
+                                    <h5 class="mb-0">Order #{{ order.order_id }}</h5>
+                                    <small class="text-muted">{{ order.ordered_at|date:"M d, Y H:i" }}</small>
+                                </div>
+                                <div class="col-md-4 text-end">
+                                    <h4 class="text-success mb-0">₹{{ order.total_price }}</h4>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p><strong>Product:</strong> {{ order.product.product_name }}</p>
+                                    <p><strong>Quantity:</strong> {{ order.quantity }} {{ order.product.unit }}</p>
+                                    <p><strong>Unit Price:</strong> ₹{{ order.unit_price }}</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p><strong>Buyer:</strong> {{ order.buyer.username }}</p>
+                                    <p><strong>Contact:</strong> {{ order.buyer_contact }}</p>
+                                    <p><strong>Address:</strong> {{ order.delivery_address }}</p>
+                                </div>
+                            </div>
+                            
+                            <hr>
+                            
+                            <div class="row align-items-center">
+                                <div class="col-md-6">
+                                    <strong>Current Status:</strong>
+                                    {% if order.status == 'pending' %}
+                                    <span class="badge bg-warning fs-6">Pending</span>
+                                    {% elif order.status == 'confirmed' %}
+                                    <span class="badge bg-info fs-6">Confirmed</span>
+                                    {% elif order.status == 'completed' %}
+                                    <span class="badge bg-success fs-6">Completed</span>
+                                    {% else %}
+                                    <span class="badge bg-danger fs-6">Cancelled</span>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-6 text-end">
+                                    <form method="post" action="{% url 'update_order_status' order.id %}" class="d-inline">
+                                        {% csrf_token %}
+                                        <select name="status" class="form-select d-inline-block w-auto" onchange="this.form.submit()">
+                                            <option value="pending" {% if order.status == 'pending' %}selected{% endif %}>Pending</option>
+                                            <option value="confirmed" {% if order.status == 'confirmed' %}selected{% endif %}>Confirmed</option>
+                                            <option value="completed" {% if order.status == 'completed' %}selected{% endif %}>Completed</option>
+                                            <option value="cancelled" {% if order.status == 'cancelled' %}selected{% endif %}>Cancelled</option>
+                                        </select>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% else %}
+            <div class="card shadow-sm">
+                <div class="card-body text-center py-5">
+                    <i class="fas fa-inbox fa-5x text-muted mb-4"></i>
+                    <h4 class="text-muted">No Orders Yet</h4>
+                    <p class="text-muted">Orders will appear here when buyers place them</p>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

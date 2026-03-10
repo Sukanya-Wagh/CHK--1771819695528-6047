@@ -1,0 +1,173 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ plan.crop_name|title }} Plan - Krushirakshak{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'crop_planning' %}">Crop Planning</a></li>
+                    <li class="breadcrumb-item active">{{ plan.crop_name|title }}</li>
+                </ol>
+            </nav>
+            
+            <h2 class="mb-4">
+                <i class="fas fa-leaf text-success"></i> {{ plan.crop_name|title }} Crop Plan
+            </h2>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Plan Overview -->
+        <div class="col-lg-4">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fas fa-info-circle"></i> Plan Overview</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Crop:</strong> {{ plan.crop_name|title }}</p>
+                    <p><strong>Area:</strong> {{ plan.area_hectares }} hectares</p>
+                    <p><strong>Season:</strong> {{ plan.season|title }}</p>
+                    <p><strong>Created:</strong> {{ plan.created_at|date:"M d, Y" }}</p>
+                    <hr>
+                    <h6 class="text-success">Soil Conditions</h6>
+                    <p class="mb-1"><strong>Type:</strong> {{ plan.soil_type|title }}</p>
+                    <p class="mb-1"><strong>pH:</strong> {{ plan.soil_ph }}</p>
+                    <p class="mb-1"><strong>N:</strong> {{ plan.soil_nitrogen }} kg/ha</p>
+                    <p class="mb-1"><strong>P:</strong> {{ plan.soil_phosphorus }} kg/ha</p>
+                    <p class="mb-1"><strong>K:</strong> {{ plan.soil_potassium }} kg/ha</p>
+                    <hr>
+                    <h6 class="text-success">Climate</h6>
+                    <p class="mb-1"><strong>Temperature:</strong> {{ plan.temperature }}°C</p>
+                    <p class="mb-1"><strong>Humidity:</strong> {{ plan.humidity }}%</p>
+                    <p class="mb-0"><strong>Rainfall:</strong> {{ plan.rainfall }} mm</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detailed Plan -->
+        <div class="col-lg-8">
+            <!-- Care Timeline -->
+            {% if plan.care_instructions %}
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="fas fa-calendar-check"></i> Care Timeline</h5>
+                </div>
+                <div class="card-body">
+                    {% for stage in plan.care_instructions %}
+                    <div class="card mb-3 border-info">
+                        <div class="card-header bg-light">
+                            <h6 class="mb-0">
+                                <i class="fas fa-circle text-info"></i> 
+                                {{ stage.stage|title }}
+                                <span class="badge bg-info float-end">{{ stage.duration_days }} days</span>
+                            </h6>
+                            <small class="text-muted">{{ stage.start_date }} to {{ stage.end_date }}</small>
+                        </div>
+                        <div class="card-body">
+                            {% if stage.fertilizer %}
+                            <h6 class="text-success"><i class="fas fa-flask"></i> Fertilizer</h6>
+                            <div class="row mb-3">
+                                <div class="col-4">
+                                    <div class="border rounded p-2 bg-light text-center">
+                                        <strong>N:</strong> {{ stage.fertilizer.npk_required.N }} kg/ha
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="border rounded p-2 bg-light text-center">
+                                        <strong>P:</strong> {{ stage.fertilizer.npk_required.P }} kg/ha
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="border rounded p-2 bg-light text-center">
+                                        <strong>K:</strong> {{ stage.fertilizer.npk_required.K }} kg/ha
+                                    </div>
+                                </div>
+                            </div>
+
+                            {% if stage.fertilizer.organic_recommendation %}
+                            <div class="alert alert-success mb-2">
+                                <strong>Organic:</strong> {{ stage.fertilizer.organic_recommendation }}
+                            </div>
+                            {% endif %}
+
+                            {% if stage.fertilizer.chemical_recommendation %}
+                            <div class="alert alert-info mb-3">
+                                <strong>Chemical:</strong> {{ stage.fertilizer.chemical_recommendation }}
+                            </div>
+                            {% endif %}
+                            {% endif %}
+
+                            {% if stage.care_tips %}
+                            <h6 class="text-warning"><i class="fas fa-lightbulb"></i> Care Tips</h6>
+                            <ul class="mb-0">
+                                {% for tip in stage.care_tips %}
+                                <li>{{ tip }}</li>
+                                {% endfor %}
+                            </ul>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Fertilizer Schedule -->
+            {% if plan.fertilizer_schedule %}
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fas fa-flask"></i> Complete Fertilizer Schedule</h5>
+                </div>
+                <div class="card-body">
+                    {% for stage, fert in plan.fertilizer_schedule.items %}
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            <h6 class="mb-0">{{ stage|title }} Stage</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row text-center mb-3">
+                                <div class="col-4">
+                                    <h5 class="text-primary">{{ fert.npk_required.N }}</h5>
+                                    <small>N (kg/ha)</small>
+                                </div>
+                                <div class="col-4">
+                                    <h5 class="text-success">{{ fert.npk_required.P }}</h5>
+                                    <small>P (kg/ha)</small>
+                                </div>
+                                <div class="col-4">
+                                    <h5 class="text-warning">{{ fert.npk_required.K }}</h5>
+                                    <small>K (kg/ha)</small>
+                                </div>
+                            </div>
+                            {% if fert.organic_recommendation %}
+                            <p><strong>Organic:</strong> {{ fert.organic_recommendation }}</p>
+                            {% endif %}
+                            {% if fert.chemical_recommendation %}
+                            <p><strong>Chemical:</strong> {{ fert.chemical_recommendation }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Actions -->
+            <div class="card shadow-sm">
+                <div class="card-body text-center">
+                    <a href="{% url 'crop_planning' %}" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Create New Plan
+                    </a>
+                    <button class="btn btn-success" onclick="window.print()">
+                        <i class="fas fa-print"></i> Print Plan
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

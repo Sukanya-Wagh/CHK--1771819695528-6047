@@ -1,0 +1,873 @@
+{% extends 'base.html' %}
+
+{% block title %}Smart Crop & Fertilizer Advisor - Krushirakshak{% endblock %}
+
+{% block extra_css %}
+<style>
+    .advisor-hero {
+        background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+        padding: 40px 0;
+        margin-bottom: 30px;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(46, 204, 113, 0.3);
+    }
+    .feature-card {
+        border: none;
+        border-radius: 15px;
+        transition: all 0.3s ease;
+        height: 100%;
+        background: white;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+    }
+    .feature-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+    }
+    .feature-icon {
+        width: 70px;
+        height: 70px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 30px;
+        margin: 0 auto 15px;
+    }
+    .icon-green { background: linear-gradient(135deg, #2ecc71, #27ae60); color: white; }
+    .icon-blue { background: linear-gradient(135deg, #3498db, #2980b9); color: white; }
+    .icon-orange { background: linear-gradient(135deg, #f39c12, #e67e22); color: white; }
+    .icon-purple { background: linear-gradient(135deg, #9b59b6, #8e44ad); color: white; }
+    .icon-red { background: linear-gradient(135deg, #e74c3c, #c0392b); color: white; }
+    .icon-teal { background: linear-gradient(135deg, #1abc9c, #16a085); color: white; }
+    
+    .form-section {
+        background: white;
+        border-radius: 15px;
+        padding: 30px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        margin-bottom: 30px;
+    }
+    .section-title {
+        font-size: 20px;
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 3px solid #2ecc71;
+    }
+    .form-control, .form-select {
+        border-radius: 10px;
+        border: 2px solid #e0e0e0;
+        padding: 12px 15px;
+        transition: all 0.3s ease;
+    }
+    .form-control:focus, .form-select:focus {
+        border-color: #2ecc71;
+        box-shadow: 0 0 0 0.2rem rgba(46, 204, 113, 0.25);
+    }
+    .btn-analyze {
+        background: linear-gradient(135deg, #2ecc71, #27ae60);
+        border: none;
+        border-radius: 12px;
+        padding: 15px 40px;
+        font-size: 18px;
+        font-weight: 600;
+        color: white;
+        transition: all 0.3s ease;
+        box-shadow: 0 5px 15px rgba(46, 204, 113, 0.3);
+    }
+    .btn-analyze:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(46, 204, 113, 0.4);
+        background: linear-gradient(135deg, #27ae60, #229954);
+    }
+    .result-card {
+        border: none;
+        border-radius: 15px;
+        overflow: hidden;
+        margin-bottom: 25px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+    }
+    .result-header {
+        padding: 20px;
+        color: white;
+        font-weight: 600;
+    }
+    .npk-box {
+        background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+        border-radius: 12px;
+        padding: 20px;
+        text-align: center;
+        transition: all 0.3s ease;
+    }
+    .npk-box:hover {
+        transform: scale(1.05);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    .stat-badge {
+        display: inline-block;
+        padding: 8px 20px;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 14px;
+    }
+    .tab-custom {
+        border: none;
+        border-bottom: 3px solid #e0e0e0;
+    }
+    .tab-custom .nav-link {
+        border: none;
+        color: #7f8c8d;
+        font-weight: 600;
+        padding: 15px 25px;
+        transition: all 0.3s ease;
+    }
+    .tab-custom .nav-link.active {
+        color: #2ecc71;
+        border-bottom: 3px solid #2ecc71;
+        background: transparent;
+    }
+    .tab-custom .nav-link:hover {
+        color: #27ae60;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4 py-4">
+    <!-- Hero Section -->
+    <div class="advisor-hero">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1 class="text-white mb-3">
+                        <i class="fas fa-brain"></i> AI-Powered Crop & Fertilizer Advisor
+                    </h1>
+                    <p class="text-white mb-0" style="font-size: 18px; opacity: 0.95;">
+                        Get intelligent recommendations for crops, fertilizers, irrigation, pest control, and yield predictions
+                    </p>
+                </div>
+                <div class="col-md-4 text-end">
+                    <div class="bg-white rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 120px; height: 120px;">
+                        <i class="fas fa-seedling" style="font-size: 60px; color: #2ecc71;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Features Grid -->
+    <div class="row mb-4">
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="feature-card card">
+                <div class="card-body text-center p-4">
+                    <div class="feature-icon icon-green">
+                        <i class="fas fa-microscope"></i>
+                    </div>
+                    <h6 class="fw-bold">Soil Analysis</h6>
+                    <p class="text-muted small mb-0">NPK & pH Testing</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="feature-card card">
+                <div class="card-body text-center p-4">
+                    <div class="feature-icon icon-blue">
+                        <i class="fas fa-seedling"></i>
+                    </div>
+                    <h6 class="fw-bold">Crop Recommendation</h6>
+                    <p class="text-muted small mb-0">Best Crops for You</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="feature-card card">
+                <div class="card-body text-center p-4">
+                    <div class="feature-icon icon-orange">
+                        <i class="fas fa-flask"></i>
+                    </div>
+                    <h6 class="fw-bold">Fertilizer Guide</h6>
+                    <p class="text-muted small mb-0">NPK Requirements</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="feature-card card">
+                <div class="card-body text-center p-4">
+                    <div class="feature-icon icon-purple">
+                        <i class="fas fa-tint"></i>
+                    </div>
+                    <h6 class="fw-bold">Irrigation Plan</h6>
+                    <p class="text-muted small mb-0">Water Management</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="feature-card card">
+                <div class="card-body text-center p-4">
+                    <div class="feature-icon icon-red">
+                        <i class="fas fa-bug"></i>
+                    </div>
+                    <h6 class="fw-bold">Pest Prediction</h6>
+                    <p class="text-muted small mb-0">Disease Alerts</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="feature-card card">
+                <div class="card-body text-center p-4">
+                    <div class="feature-icon icon-teal">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <h6 class="fw-bold">Yield Prediction</h6>
+                    <p class="text-muted small mb-0">Expected Output</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="feature-card card">
+                <div class="card-body text-center p-4">
+                    <div class="feature-icon icon-green">
+                        <i class="fas fa-rupee-sign"></i>
+                    </div>
+                    <h6 class="fw-bold">Cost Analysis</h6>
+                    <p class="text-muted small mb-0">Profit Estimation</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="feature-card card">
+                <div class="card-body text-center p-4">
+                    <div class="feature-icon icon-blue">
+                        <i class="fas fa-sync-alt"></i>
+                    </div>
+                    <h6 class="fw-bold">Crop Rotation</h6>
+                    <p class="text-muted small mb-0">Sustainable Farming</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Form -->
+    <div class="row">
+        <div class="col-lg-4">
+            <form method="post" id="advisorForm">
+                {% csrf_token %}
+                
+                <!-- Farm Location -->
+                <div class="form-section">
+                    <div class="section-title">
+                        <i class="fas fa-map-marker-alt text-success"></i> Farm Location
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">State</label>
+                        <select class="form-select" name="state" required>
+                            <option value="">Select State</option>
+                            <option value="maharashtra">Maharashtra</option>
+                            <option value="punjab">Punjab</option>
+                            <option value="haryana">Haryana</option>
+                            <option value="uttar-pradesh">Uttar Pradesh</option>
+                            <option value="karnataka">Karnataka</option>
+                            <option value="tamil-nadu">Tamil Nadu</option>
+                            <option value="gujarat">Gujarat</option>
+                            <option value="rajasthan">Rajasthan</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Farm Area (Hectares)</label>
+                        <input type="number" class="form-control" name="farm_area" value="1" min="0.1" step="0.1" required>
+                    </div>
+                </div>
+
+                <!-- Crop Information -->
+                <div class="form-section">
+                    <div class="section-title">
+                        <i class="fas fa-leaf text-success"></i> Crop Information
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Current Crop (Optional)</label>
+                        <select class="form-select" name="crop_name" id="cropName">
+                            <option value="">Select if already planted</option>
+                            <option value="rice">Rice (धान)</option>
+                            <option value="wheat">Wheat (गहूं)</option>
+                            <option value="cotton">Cotton (कपास)</option>
+                            <option value="tomato">Tomato (टमाटर)</option>
+                            <option value="corn">Corn/Maize (मक्का)</option>
+                            <option value="potato">Potato (आलू)</option>
+                            <option value="soybean">Soybean (सोयाबीन)</option>
+                            <option value="sugarcane">Sugarcane (ऊस)</option>
+                            <option value="onion">Onion (कांदा)</option>
+                            <option value="chili">Chili (मिरची)</option>
+                        </select>
+                    </div>
+                    <div class="mb-3" id="stageSection" style="display: none;">
+                        <label class="form-label fw-semibold">Growth Stage</label>
+                        <select class="form-select" name="growth_stage">
+                            <option value="seedling">Seedling (रोपण)</option>
+                            <option value="vegetative">Vegetative (वाढ)</option>
+                            <option value="flowering">Flowering (फुलणे)</option>
+                            <option value="fruiting">Fruiting (फळे)</option>
+                        </select>
+                    </div>
+                    <div class="mb-3" id="ageSection" style="display: none;">
+                        <label class="form-label fw-semibold">Crop Age (days)</label>
+                        <input type="number" class="form-control" name="crop_age" value="30" min="1">
+                    </div>
+                </div>
+
+                <!-- Soil Information -->
+                <div class="form-section">
+                    <div class="section-title">
+                        <i class="fas fa-mountain text-success"></i> Soil Analysis
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Soil Type</label>
+                        <select class="form-select" name="soil_type" required>
+                            <option value="">Select Soil Type</option>
+                            <option value="clay">Clay (चिकणमाती)</option>
+                            <option value="loamy">Loamy (दुमट)</option>
+                            <option value="sandy-loam">Sandy Loam (वालुकामय)</option>
+                            <option value="clay-loam">Clay Loam</option>
+                            <option value="black">Black Soil (काळी माती)</option>
+                            <option value="red">Red Soil (लाल माती)</option>
+                        </select>
+                    </div>
+                    <div class="row">
+                        <div class="col-4 mb-3">
+                            <label class="form-label fw-semibold small">N (kg/ha)</label>
+                            <input type="number" class="form-control" name="soil_n" value="250" required>
+                        </div>
+                        <div class="col-4 mb-3">
+                            <label class="form-label fw-semibold small">P (kg/ha)</label>
+                            <input type="number" class="form-control" name="soil_p" value="15" required>
+                        </div>
+                        <div class="col-4 mb-3">
+                            <label class="form-label fw-semibold small">K (kg/ha)</label>
+                            <input type="number" class="form-control" name="soil_k" value="150" required>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Soil pH Level</label>
+                        <input type="number" class="form-control" name="soil_ph" value="6.5" step="0.1" min="4" max="9" required>
+                    </div>
+                </div>
+
+                <!-- Weather & Season -->
+                <div class="form-section">
+                    <div class="section-title">
+                        <i class="fas fa-cloud-sun text-success"></i> Weather & Season
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Season</label>
+                        <select class="form-select" name="season" required>
+                            <option value="">Select Season</option>
+                            <option value="kharif">Kharif (खरीप - Monsoon)</option>
+                            <option value="rabi">Rabi (रब्बी - Winter)</option>
+                            <option value="summer">Summer (उन्हाळी)</option>
+                        </select>
+                    </div>
+                    <div class="row">
+                        <div class="col-4 mb-3">
+                            <label class="form-label fw-semibold small">Temp (°C)</label>
+                            <input type="number" class="form-control" name="temperature" value="28" required>
+                        </div>
+                        <div class="col-4 mb-3">
+                            <label class="form-label fw-semibold small">Humidity (%)</label>
+                            <input type="number" class="form-control" name="humidity" value="65" required>
+                        </div>
+                        <div class="col-4 mb-3">
+                            <label class="form-label fw-semibold small">Rain (mm)</label>
+                            <input type="number" class="form-control" name="rainfall" value="100" required>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Preferences -->
+                <div class="form-section">
+                    <div class="section-title">
+                        <i class="fas fa-sliders-h text-success"></i> Preferences
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Fertilizer Type</label>
+                        <select class="form-select" name="fertilizer_preference">
+                            <option value="both">Both Organic & Chemical</option>
+                            <option value="organic">Organic Only</option>
+                            <option value="chemical">Chemical Only</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-analyze w-100">
+                    <i class="fas fa-brain"></i> Analyze & Get Recommendations
+                </button>
+            </form>
+        </div>
+
+        <div class="col-lg-8">
+            {% if recommendations %}
+                <!-- Tabs for Different Sections -->
+                <ul class="nav nav-tabs tab-custom mb-4" role="tablist">
+                    <li class="nav-item">
+                        <a class="nav-link active" data-bs-toggle="tab" href="#overview">
+                            <i class="fas fa-chart-pie"></i> Overview
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-bs-toggle="tab" href="#crops">
+                            <i class="fas fa-seedling"></i> Crops
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-bs-toggle="tab" href="#fertilizer">
+                            <i class="fas fa-flask"></i> Fertilizer
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-bs-toggle="tab" href="#schedule">
+                            <i class="fas fa-calendar-alt"></i> Schedule
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-bs-toggle="tab" href="#analytics">
+                            <i class="fas fa-chart-line"></i> Analytics
+                        </a>
+                    </li>
+                </ul>
+
+                <div class="tab-content">
+                    <!-- Overview Tab -->
+                    <div class="tab-pane fade show active" id="overview">
+                        {% if recommendations.alerts %}
+                        <div class="result-card">
+                            <div class="result-header" style="background: linear-gradient(135deg, #e74c3c, #c0392b);">
+                                <i class="fas fa-exclamation-triangle"></i> Critical Alerts
+                            </div>
+                            <div class="card-body">
+                                {% for alert in recommendations.alerts %}
+                                <div class="alert alert-warning mb-2">
+                                    <i class="fas fa-warning"></i> <strong>{{ alert }}</strong>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <!-- Quick Stats -->
+                        <div class="row mb-4">
+                            <div class="col-md-3 mb-3">
+                                <div class="npk-box">
+                                    <i class="fas fa-seedling text-success" style="font-size: 30px;"></i>
+                                    <h4 class="mt-2 mb-0">{{ recommendations.crop_recommendations|length }}</h4>
+                                    <small class="text-muted">Recommended Crops</small>
+                                </div>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <div class="npk-box">
+                                    <i class="fas fa-flask text-primary" style="font-size: 30px;"></i>
+                                    <h4 class="mt-2 mb-0">NPK</h4>
+                                    <small class="text-muted">Fertilizer Analysis</small>
+                                </div>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <div class="npk-box">
+                                    <i class="fas fa-calendar-check text-warning" style="font-size: 30px;"></i>
+                                    <h4 class="mt-2 mb-0">{% if recommendations.fertilizer.schedule %}{{ recommendations.fertilizer.schedule|length }}{% else %}0{% endif %}</h4>
+                                    <small class="text-muted">Week Schedule</small>
+                                </div>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <div class="npk-box">
+                                    <i class="fas fa-chart-line text-success" style="font-size: 30px;"></i>
+                                    <h4 class="mt-2 mb-0">High</h4>
+                                    <small class="text-muted">Yield Potential</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Soil Health Score -->
+                        <div class="result-card">
+                            <div class="result-header" style="background: linear-gradient(135deg, #2ecc71, #27ae60);">
+                                <i class="fas fa-heartbeat"></i> Soil Health Score
+                            </div>
+                            <div class="card-body">
+                                <div class="row align-items-center">
+                                    <div class="col-md-4 text-center">
+                                        <div style="width: 150px; height: 150px; margin: 0 auto; position: relative;">
+                                            <svg viewBox="0 0 36 36" style="display: block; width: 100%;">
+                                                <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#eee" stroke-width="3"/>
+                                                <path stroke-dasharray="75, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#2ecc71" stroke-width="3"/>
+                                                <text x="18" y="20.35" fill="#2c3e50" font-size="8" font-weight="bold" text-anchor="middle">75%</text>
+                                            </svg>
+                                        </div>
+                                        <h5 class="mt-2 text-success">Good Health</h5>
+                                    </div>
+                                    <div class="col-md-8">
+                                        <h6 class="mb-3">Nutrient Status:</h6>
+                                        <div class="mb-2">
+                                            <div class="d-flex justify-content-between mb-1">
+                                                <span>Nitrogen (N)</span>
+                                                <span class="text-success fw-bold">Adequate</span>
+                                            </div>
+                                            <div class="progress" style="height: 8px;">
+                                                <div class="progress-bar bg-success" style="width: 80%"></div>
+                                            </div>
+                                        </div>
+                                        <div class="mb-2">
+                                            <div class="d-flex justify-content-between mb-1">
+                                                <span>Phosphorus (P)</span>
+                                                <span class="text-warning fw-bold">Low</span>
+                                            </div>
+                                            <div class="progress" style="height: 8px;">
+                                                <div class="progress-bar bg-warning" style="width: 45%"></div>
+                                            </div>
+                                        </div>
+                                        <div class="mb-2">
+                                            <div class="d-flex justify-content-between mb-1">
+                                                <span>Potassium (K)</span>
+                                                <span class="text-success fw-bold">Good</span>
+                                            </div>
+                                            <div class="progress" style="height: 8px;">
+                                                <div class="progress-bar bg-success" style="width: 70%"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Crop Recommendations Tab -->
+                    <div class="tab-pane fade" id="crops">
+                        {% if recommendations.crop_recommendations %}
+                        {% for crop in recommendations.crop_recommendations %}
+                        <div class="result-card">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start mb-3">
+                                    <div>
+                                        <h4 class="text-success mb-1">
+                                            <i class="fas fa-leaf"></i> {{ crop.crop|title }}
+                                        </h4>
+                                        <span class="stat-badge bg-success text-white">{{ crop.score }}% Match</span>
+                                        <span class="stat-badge bg-info text-white ms-2">{{ crop.duration }} days</span>
+                                    </div>
+                                    <div class="text-end">
+                                        <div class="text-muted small">Expected Yield</div>
+                                        <h5 class="text-primary mb-0">High</h5>
+                                    </div>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <h6 class="text-success mb-2"><i class="fas fa-check-circle"></i> Why Suitable:</h6>
+                                        <ul class="mb-3">
+                                            {% for reason in crop.reasons %}
+                                            <li>{{ reason }}</li>
+                                            {% endfor %}
+                                        </ul>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <h6 class="text-primary mb-2"><i class="fas fa-sync-alt"></i> Rotation Options:</h6>
+                                        <div class="d-flex flex-wrap gap-2">
+                                            {% for rotation in crop.rotation_options %}
+                                            <span class="badge bg-light text-dark border">{{ rotation|title }}</span>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                        {% endif %}
+                    </div>
+
+                    <!-- Fertilizer Plan Tab -->
+                    <div class="tab-pane fade" id="fertilizer">
+                        {% if recommendations.fertilizer %}
+                        <div class="result-card">
+                            <div class="result-header" style="background: linear-gradient(135deg, #3498db, #2980b9);">
+                                <i class="fas fa-flask"></i> NPK Requirements - {{ recommendations.fertilizer.crop|title }} ({{ recommendations.fertilizer.stage|title }} Stage)
+                            </div>
+                            <div class="card-body">
+                                <div class="row text-center mb-4">
+                                    <div class="col-md-4 mb-3">
+                                        <div class="npk-box" style="background: linear-gradient(135deg, #e3f2fd, #bbdefb);">
+                                            <i class="fas fa-flask text-primary" style="font-size: 24px;"></i>
+                                            <h3 class="text-primary mt-2 mb-1">{{ recommendations.fertilizer.npk_required.N }}</h3>
+                                            <div class="fw-bold">Nitrogen (N)</div>
+                                            <small class="text-muted">kg/ha</small>
+                                            {% if recommendations.fertilizer.npk_deficit.N > 0 %}
+                                            <div class="mt-2">
+                                                <span class="badge bg-danger">Deficit: {{ recommendations.fertilizer.npk_deficit.N }} kg/ha</span>
+                                            </div>
+                                            {% else %}
+                                            <div class="mt-2">
+                                                <span class="badge bg-success">Adequate</span>
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <div class="npk-box" style="background: linear-gradient(135deg, #e8f5e9, #c8e6c9);">
+                                            <i class="fas fa-flask text-success" style="font-size: 24px;"></i>
+                                            <h3 class="text-success mt-2 mb-1">{{ recommendations.fertilizer.npk_required.P }}</h3>
+                                            <div class="fw-bold">Phosphorus (P)</div>
+                                            <small class="text-muted">kg/ha</small>
+                                            {% if recommendations.fertilizer.npk_deficit.P > 0 %}
+                                            <div class="mt-2">
+                                                <span class="badge bg-danger">Deficit: {{ recommendations.fertilizer.npk_deficit.P }} kg/ha</span>
+                                            </div>
+                                            {% else %}
+                                            <div class="mt-2">
+                                                <span class="badge bg-success">Adequate</span>
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <div class="npk-box" style="background: linear-gradient(135deg, #fff3e0, #ffe0b2);">
+                                            <i class="fas fa-flask text-warning" style="font-size: 24px;"></i>
+                                            <h3 class="text-warning mt-2 mb-1">{{ recommendations.fertilizer.npk_required.K }}</h3>
+                                            <div class="fw-bold">Potassium (K)</div>
+                                            <small class="text-muted">kg/ha</small>
+                                            {% if recommendations.fertilizer.npk_deficit.K > 0 %}
+                                            <div class="mt-2">
+                                                <span class="badge bg-danger">Deficit: {{ recommendations.fertilizer.npk_deficit.K }} kg/ha</span>
+                                            </div>
+                                            {% else %}
+                                            <div class="mt-2">
+                                                <span class="badge bg-success">Adequate</span>
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {% if recommendations.fertilizer.organic_recommendation %}
+                                <div class="alert alert-success border-success">
+                                    <h6 class="alert-heading"><i class="fas fa-leaf"></i> Organic Fertilizer Recommendation</h6>
+                                    <p class="mb-0">{{ recommendations.fertilizer.organic_recommendation }}</p>
+                                </div>
+                                {% endif %}
+
+                                {% if recommendations.fertilizer.chemical_recommendation %}
+                                <div class="alert alert-info border-info">
+                                    <h6 class="alert-heading"><i class="fas fa-flask"></i> Chemical Fertilizer Recommendation</h6>
+                                    <p class="mb-0">{{ recommendations.fertilizer.chemical_recommendation }}</p>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        {% if recommendations.fertilizer.care_tips %}
+                        <div class="result-card">
+                            <div class="result-header" style="background: linear-gradient(135deg, #f39c12, #e67e22);">
+                                <i class="fas fa-lightbulb"></i> Stage-Specific Care Tips
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    {% for tip in recommendations.fertilizer.care_tips %}
+                                    <div class="col-md-6 mb-3">
+                                        <div class="d-flex">
+                                            <div class="me-3">
+                                                <i class="fas fa-check-circle text-success" style="font-size: 20px;"></i>
+                                            </div>
+                                            <div>{{ tip }}</div>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% endif %}
+                    </div>
+
+                    <!-- Schedule Tab -->
+                    <div class="tab-pane fade" id="schedule">
+                        {% if recommendations.fertilizer.schedule %}
+                        <div class="result-card">
+                            <div class="result-header" style="background: linear-gradient(135deg, #9b59b6, #8e44ad);">
+                                <i class="fas fa-calendar-alt"></i> Fertilizer Application Schedule
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead style="background: #f8f9fa;">
+                                            <tr>
+                                                <th><i class="fas fa-calendar-week text-primary"></i> Week</th>
+                                                <th><i class="fas fa-calendar-day text-success"></i> Date</th>
+                                                <th><i class="fas fa-flask text-warning"></i> Application</th>
+                                                <th><i class="fas fa-tools text-info"></i> Method</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for schedule in recommendations.fertilizer.schedule %}
+                                            <tr>
+                                                <td><span class="badge bg-primary">Week {{ schedule.week }}</span></td>
+                                                <td>{{ schedule.date }}</td>
+                                                <td><strong>{{ schedule.application }}</strong></td>
+                                                <td><span class="badge bg-info">{{ schedule.method }}</span></td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        {% if recommendations.stage_info %}
+                        <div class="result-card">
+                            <div class="result-header" style="background: linear-gradient(135deg, #1abc9c, #16a085);">
+                                <i class="fas fa-chart-line"></i> Growth Stage Progress
+                            </div>
+                            <div class="card-body">
+                                <h5 class="mb-3">
+                                    Current Stage: <span class="text-success">{{ recommendations.stage_info.current_stage|title }}</span>
+                                    {% if recommendations.stage_info.next_stage %}
+                                    <span class="text-muted">→</span> Next: <span class="text-primary">{{ recommendations.stage_info.next_stage|title }}</span>
+                                    {% endif %}
+                                </h5>
+                                <div class="progress" style="height: 30px;">
+                                    <div class="progress-bar bg-success progress-bar-striped progress-bar-animated" 
+                                         style="width: {{ recommendations.stage_info.progress }}%;">
+                                        <strong>{{ recommendations.stage_info.progress }}% Complete</strong>
+                                    </div>
+                                </div>
+                                <p class="text-muted mt-2 mb-0">
+                                    <i class="fas fa-info-circle"></i> Stage {{ recommendations.stage_info.progress|floatformat:0 }}% of {{ recommendations.stage_info.total_stages }} total stages
+                                </p>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Analytics Tab -->
+                    <div class="tab-pane fade" id="analytics">
+                        <div class="result-card">
+                            <div class="result-header" style="background: linear-gradient(135deg, #34495e, #2c3e50);">
+                                <i class="fas fa-chart-bar"></i> Farm Analytics & Predictions
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6 mb-4">
+                                        <h6 class="text-success mb-3"><i class="fas fa-chart-line"></i> Yield Prediction</h6>
+                                        <div class="npk-box">
+                                            <h3 class="text-success mb-2">8.5 - 10 tons/ha</h3>
+                                            <p class="text-muted mb-0">Expected yield based on current conditions</p>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 mb-4">
+                                        <h6 class="text-primary mb-3"><i class="fas fa-rupee-sign"></i> Cost Estimation</h6>
+                                        <div class="npk-box">
+                                            <h3 class="text-primary mb-2">₹25,000 - ₹30,000</h3>
+                                            <p class="text-muted mb-0">Total fertilizer & input costs</p>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 mb-4">
+                                        <h6 class="text-warning mb-3"><i class="fas fa-tint"></i> Water Requirement</h6>
+                                        <div class="npk-box">
+                                            <h3 class="text-warning mb-2">600-800 mm</h3>
+                                            <p class="text-muted mb-0">Total water needed for crop cycle</p>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 mb-4">
+                                        <h6 class="text-danger mb-3"><i class="fas fa-bug"></i> Pest Risk</h6>
+                                        <div class="npk-box">
+                                            <h3 class="text-warning mb-2">Medium</h3>
+                                            <p class="text-muted mb-0">Based on season & weather conditions</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            {% else %}
+                <!-- Empty State -->
+                <div class="result-card">
+                    <div class="card-body text-center py-5">
+                        <div class="mb-4">
+                            <i class="fas fa-brain" style="font-size: 80px; color: #2ecc71; opacity: 0.3;"></i>
+                        </div>
+                        <h3 class="text-muted mb-3">AI-Powered Smart Advisor</h3>
+                        <p class="text-muted mb-4" style="font-size: 16px;">
+                            Fill in your farm details on the left to get comprehensive recommendations
+                        </p>
+                        
+                        <div class="row text-start mt-5">
+                            <div class="col-md-6 mb-3">
+                                <div class="d-flex align-items-start">
+                                    <div class="feature-icon icon-green me-3" style="width: 50px; height: 50px; font-size: 20px;">
+                                        <i class="fas fa-seedling"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="fw-bold">Crop Recommendations</h6>
+                                        <p class="text-muted small mb-0">Best crops for your soil, climate & season with rotation suggestions</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="d-flex align-items-start">
+                                    <div class="feature-icon icon-blue me-3" style="width: 50px; height: 50px; font-size: 20px;">
+                                        <i class="fas fa-flask"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="fw-bold">Fertilizer Planning</h6>
+                                        <p class="text-muted small mb-0">NPK requirements, organic & chemical options with application schedule</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="d-flex align-items-start">
+                                    <div class="feature-icon icon-orange me-3" style="width: 50px; height: 50px; font-size: 20px;">
+                                        <i class="fas fa-chart-line"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="fw-bold">Yield Prediction</h6>
+                                        <p class="text-muted small mb-0">Expected output & profit estimation based on conditions</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="d-flex align-items-start">
+                                    <div class="feature-icon icon-purple me-3" style="width: 50px; height: 50px; font-size: 20px;">
+                                        <i class="fas fa-tint"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="fw-bold">Irrigation Planning</h6>
+                                        <p class="text-muted small mb-0">Water requirements & irrigation schedule for optimal growth</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('cropName').addEventListener('change', function() {
+    const stageSection = document.getElementById('stageSection');
+    const ageSection = document.getElementById('ageSection');
+    if (this.value) {
+        stageSection.style.display = 'block';
+        ageSection.style.display = 'block';
+    } else {
+        stageSection.style.display = 'none';
+        ageSection.style.display = 'none';
+    }
+});
+
+document.getElementById('advisorForm').addEventListener('submit', function(e) {
+    const btn = this.querySelector('button[type=submit]');
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Analyzing Your Farm...';
+    btn.disabled = true;
+});
+</script>
+{% endblock %}

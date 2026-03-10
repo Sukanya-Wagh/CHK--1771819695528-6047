@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }} - FarmSphere{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3><i class="fas fa-tractor text-success"></i> {{ title }}</h3>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.name.id_for_label }}" class="form-label">Farm Name</label>
+                            {{ form.name }}
+                            {% if form.name.errors %}
+                                <div class="text-danger">{{ form.name.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="{{ form.latitude.id_for_label }}" class="form-label">Latitude</label>
+                                    {{ form.latitude }}
+                                    {% if form.latitude.errors %}
+                                        <div class="text-danger">{{ form.latitude.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="{{ form.longitude.id_for_label }}" class="form-label">Longitude</label>
+                                    {{ form.longitude }}
+                                    {% if form.longitude.errors %}
+                                        <div class="text-danger">{{ form.longitude.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <button type="button" class="btn btn-outline-info" onclick="getCurrentLocation()">
+                                <i class="fas fa-map-marker-alt"></i> Use Current Location
+                            </button>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.size_acres.id_for_label }}" class="form-label">Farm Size (Acres)</label>
+                            {{ form.size_acres }}
+                            {% if form.size_acres.errors %}
+                                <div class="text-danger">{{ form.size_acres.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.address.id_for_label }}" class="form-label">Address</label>
+                            {{ form.address }}
+                            {% if form.address.errors %}
+                                <div class="text-danger">{{ form.address.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'farm_list' %}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Back to Farms
+                            </a>
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-save"></i> Save Farm
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function getCurrentLocation() {
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(function(position) {
+            document.getElementById('id_latitude').value = position.coords.latitude.toFixed(6);
+            document.getElementById('id_longitude').value = position.coords.longitude.toFixed(6);
+            
+            // Show success message
+            const button = document.querySelector('button[onclick="getCurrentLocation()"]');
+            const originalText = button.innerHTML;
+            button.innerHTML = '<i class="fas fa-check text-success"></i> Location Updated';
+            button.classList.add('btn-success');
+            button.classList.remove('btn-outline-info');
+            
+            setTimeout(() => {
+                button.innerHTML = originalText;
+                button.classList.remove('btn-success');
+                button.classList.add('btn-outline-info');
+            }, 2000);
+        }, function(error) {
+            alert('Error getting location: ' + error.message);
+        });
+    } else {
+        alert('Geolocation is not supported by this browser.');
+    }
+}
+</script>
+{% endblock %}

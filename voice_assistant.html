@@ -1,0 +1,406 @@
+{% extends 'base.html' %}
+
+{% block title %}Voice Assistant - Krushirakshak{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row mb-4">
+        <div class="col-12 text-center">
+            <div class="voice-header">
+                <i class="fas fa-microphone-alt fa-4x text-primary mb-3" style="animation: pulse 2s infinite;"></i>
+                <h2 class="mb-3">
+                    <i class="fas fa-robot text-success"></i> Voice Assistant for Farmers
+                </h2>
+                <p class="lead text-muted">Speak or type your farming questions in English, Hindi, or Marathi</p>
+                <div class="badge-container mt-3">
+                    <span class="badge bg-success me-2"><i class="fas fa-language"></i> Multi-Language</span>
+                    <span class="badge bg-primary me-2"><i class="fas fa-brain"></i> AI-Powered</span>
+                    <span class="badge bg-info"><i class="fas fa-volume-up"></i> Voice Enabled</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Input Section -->
+        <div class="col-lg-6">
+            <div class="card shadow-lg border-0 mb-4">
+                <div class="card-header bg-gradient text-white" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                    <h5 class="mb-0"><i class="fas fa-comments"></i> Ask Your Question</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" id="voiceForm">
+                        {% csrf_token %}
+                        
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Select Language / भाषा चुनें / भाषा निवडा</label>
+                            <div class="btn-group w-100" role="group">
+                                <input type="radio" class="btn-check" name="language" id="lang_en" value="en" checked>
+                                <label class="btn btn-outline-primary" for="lang_en">
+                                    <i class="fas fa-flag"></i> English
+                                </label>
+                                
+                                <input type="radio" class="btn-check" name="language" id="lang_hi" value="hi">
+                                <label class="btn btn-outline-primary" for="lang_hi">
+                                    <i class="fas fa-flag"></i> हिंदी
+                                </label>
+                                
+                                <input type="radio" class="btn-check" name="language" id="lang_mr" value="mr">
+                                <label class="btn btn-outline-primary" for="lang_mr">
+                                    <i class="fas fa-flag"></i> मराठी
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Your Question</label>
+                            <div class="input-group">
+                                <textarea class="form-control" name="query_text" id="queryText" rows="4" 
+                                    placeholder="Type or speak your question..." required></textarea>
+                            </div>
+                            <small class="text-muted">
+                                <i class="fas fa-info-circle"></i> You can type or use voice input
+                            </small>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="button" class="btn btn-danger btn-lg" id="voiceBtn" onclick="startVoiceRecognition()">
+                                <i class="fas fa-microphone"></i> <span id="voiceBtnText">Start Voice Input</span>
+                            </button>
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="fas fa-paper-plane"></i> Get Answer
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Example Queries -->
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-light">
+                    <h6 class="mb-0"><i class="fas fa-lightbulb text-warning"></i> Example Questions</h6>
+                </div>
+                <div class="card-body">
+                    <ul class="nav nav-tabs mb-3" role="tablist">
+                        <li class="nav-item">
+                            <a class="nav-link active" data-bs-toggle="tab" href="#examples-en">English</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" data-bs-toggle="tab" href="#examples-hi">हिंदी</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" data-bs-toggle="tab" href="#examples-mr">मराठी</a>
+                        </li>
+                    </ul>
+                    
+                    <div class="tab-content">
+                        <div class="tab-pane fade show active" id="examples-en">
+                            <ul class="list-unstyled">
+                                {% for example in examples.en %}
+                                <li class="mb-2">
+                                    <button class="btn btn-sm btn-outline-secondary w-100 text-start" onclick="fillQuery('{{ example }}', 'en')">
+                                        <i class="fas fa-quote-left"></i> {{ example }}
+                                    </button>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        <div class="tab-pane fade" id="examples-hi">
+                            <ul class="list-unstyled">
+                                {% for example in examples.hi %}
+                                <li class="mb-2">
+                                    <button class="btn btn-sm btn-outline-secondary w-100 text-start" onclick="fillQuery('{{ example }}', 'hi')">
+                                        <i class="fas fa-quote-left"></i> {{ example }}
+                                    </button>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        <div class="tab-pane fade" id="examples-mr">
+                            <ul class="list-unstyled">
+                                {% for example in examples.mr %}
+                                <li class="mb-2">
+                                    <button class="btn btn-sm btn-outline-secondary w-100 text-start" onclick="fillQuery('{{ example }}', 'mr')">
+                                        <i class="fas fa-quote-left"></i> {{ example }}
+                                    </button>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Response Section -->
+        <div class="col-lg-6">
+            {% if response_data %}
+            <div class="card shadow-lg border-0 mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fas fa-check-circle"></i> AI Response</h5>
+                </div>
+                <div class="card-body">
+                    <div class="response-box p-4 bg-light rounded">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <span class="badge bg-primary">{{ response_data.intent|title }}</span>
+                            <span class="badge bg-info">{{ response_data.language|upper }}</span>
+                        </div>
+                        
+                        <div class="response-text mb-3">
+                            <i class="fas fa-robot text-success fa-2x mb-2"></i>
+                            <p class="lead">{{ response_data.text_response }}</p>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-primary" onclick="speakResponse('{{ response_data.text_response }}', '{{ response_data.language }}')">
+                                <i class="fas fa-volume-up"></i> Listen to Response
+                            </button>
+                        </div>
+                    </div>
+
+                    {% if response_data.suggestions %}
+                    <div class="mt-4">
+                        <h6 class="text-muted"><i class="fas fa-arrow-right"></i> Related Questions:</h6>
+                        <div class="d-grid gap-2">
+                            {% for suggestion in response_data.suggestions %}
+                            <button class="btn btn-sm btn-outline-primary text-start" onclick="fillQuery('{{ suggestion }}', '{{ response_data.language }}')">
+                                {{ suggestion }}
+                            </button>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% else %}
+            <!-- Default State -->
+            <div class="card shadow-lg border-0">
+                <div class="card-body text-center py-5">
+                    <i class="fas fa-headset fa-5x text-primary mb-4" style="opacity: 0.3;"></i>
+                    <h4 class="text-muted mb-3">How It Works</h4>
+                    
+                    <div class="row text-start mt-4">
+                        <div class="col-12 mb-3">
+                            <div class="d-flex align-items-start">
+                                <div class="feature-icon bg-primary text-white rounded-circle p-3 me-3">
+                                    <i class="fas fa-microphone"></i>
+                                </div>
+                                <div>
+                                    <h6 class="fw-bold">1. Speak or Type</h6>
+                                    <p class="text-muted small mb-0">Ask your farming question in your preferred language</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-12 mb-3">
+                            <div class="d-flex align-items-start">
+                                <div class="feature-icon bg-success text-white rounded-circle p-3 me-3">
+                                    <i class="fas fa-brain"></i>
+                                </div>
+                                <div>
+                                    <h6 class="fw-bold">2. AI Processing</h6>
+                                    <p class="text-muted small mb-0">Our AI understands and analyzes your question</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-12 mb-3">
+                            <div class="d-flex align-items-start">
+                                <div class="feature-icon bg-info text-white rounded-circle p-3 me-3">
+                                    <i class="fas fa-comment-dots"></i>
+                                </div>
+                                <div>
+                                    <h6 class="fw-bold">3. Get Answer</h6>
+                                    <p class="text-muted small mb-0">Receive instant farming advice in text and audio</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-info mt-4">
+                        <i class="fas fa-info-circle"></i> 
+                        <strong>Tip:</strong> Click on example questions or use the microphone button to get started!
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Features -->
+            <div class="card shadow-sm border-0 mt-4">
+                <div class="card-header bg-light">
+                    <h6 class="mb-0"><i class="fas fa-star text-warning"></i> Features</h6>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled mb-0">
+                        <li class="mb-2"><i class="fas fa-check text-success"></i> Multi-language support (English, Hindi, Marathi)</li>
+                        <li class="mb-2"><i class="fas fa-check text-success"></i> Voice input and output</li>
+                        <li class="mb-2"><i class="fas fa-check text-success"></i> Fertilizer recommendations</li>
+                        <li class="mb-2"><i class="fas fa-check text-success"></i> Disease detection guidance</li>
+                        <li class="mb-2"><i class="fas fa-check text-success"></i> Weather updates</li>
+                        <li class="mb-0"><i class="fas fa-check text-success"></i> Irrigation advice</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+@keyframes pulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.1); opacity: 0.8; }
+}
+
+.voice-header {
+    padding: 2rem;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 20px;
+    margin-bottom: 2rem;
+}
+
+.badge-container .badge {
+    font-size: 0.9rem;
+    padding: 0.5rem 1rem;
+}
+
+.response-box {
+    border-left: 4px solid #28a745;
+}
+
+.feature-icon {
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#voiceBtn.recording {
+    animation: pulse 1s infinite;
+    background-color: #dc3545 !important;
+}
+</style>
+
+{% endblock %}
+
+{% block extra_js %}
+<script type="text/javascript">
+let recognition;
+let isRecording = false;
+
+// Initialize Speech Recognition
+if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    recognition = new SpeechRecognition();
+    recognition.continuous = false;
+    recognition.interimResults = false;
+}
+
+function startVoiceRecognition() {
+    if (!recognition) {
+        alert('Speech recognition is not supported in your browser. Please use Chrome or Edge.');
+        return;
+    }
+
+    const voiceBtn = document.getElementById('voiceBtn');
+    const voiceBtnText = document.getElementById('voiceBtnText');
+    const queryText = document.getElementById('queryText');
+    
+    if (isRecording) {
+        recognition.stop();
+        isRecording = false;
+        voiceBtn.classList.remove('recording');
+        voiceBtnText.textContent = 'Start Voice Input';
+        return;
+    }
+
+    // Get selected language
+    const selectedLang = document.querySelector('input[name="language"]:checked').value;
+    const langMap = {
+        'en': 'en-US',
+        'hi': 'hi-IN',
+        'mr': 'mr-IN'
+    };
+    recognition.lang = langMap[selectedLang] || 'en-US';
+
+    recognition.start();
+    isRecording = true;
+    voiceBtn.classList.add('recording');
+    voiceBtnText.textContent = 'Listening...';
+
+    recognition.onresult = function(event) {
+        const transcript = event.results[0][0].transcript;
+        queryText.value = transcript;
+        isRecording = false;
+        voiceBtn.classList.remove('recording');
+        voiceBtnText.textContent = 'Start Voice Input';
+    };
+
+    recognition.onerror = function(event) {
+        console.error('Speech recognition error:', event.error);
+        isRecording = false;
+        voiceBtn.classList.remove('recording');
+        voiceBtnText.textContent = 'Start Voice Input';
+        alert('Error: ' + event.error);
+    };
+
+    recognition.onend = function() {
+        isRecording = false;
+        voiceBtn.classList.remove('recording');
+        voiceBtnText.textContent = 'Start Voice Input';
+    };
+}
+
+function speakResponse(text, language) {
+    if ('speechSynthesis' in window) {
+        // Stop any ongoing speech
+        speechSynthesis.cancel();
+        
+        const utterance = new SpeechSynthesisUtterance(text);
+        
+        const langMap = {
+            'en': 'en-US',
+            'hi': 'hi-IN',
+            'mr': 'mr-IN'
+        };
+        utterance.lang = langMap[language] || 'en-US';
+        utterance.rate = 0.85;  // Slightly slower for clarity
+        utterance.pitch = 1.0;
+        utterance.volume = 1.0;  // Maximum volume
+        
+        // Visual feedback
+        const btn = event.target;
+        btn.innerHTML = '<i class="fas fa-volume-up fa-beat"></i> Speaking...';
+        btn.disabled = true;
+        
+        utterance.onend = function() {
+            btn.innerHTML = '<i class="fas fa-volume-up"></i> Listen to Response';
+            btn.disabled = false;
+        };
+        
+        utterance.onerror = function(e) {
+            console.error('Speech synthesis error:', e);
+            btn.innerHTML = '<i class="fas fa-volume-up"></i> Listen to Response';
+            btn.disabled = false;
+            alert('Error playing audio. Please check your browser settings.');
+        };
+        
+        speechSynthesis.speak(utterance);
+    } else {
+        alert('Text-to-speech is not supported in your browser. Please use Chrome, Edge, or Safari.');
+    }
+}
+
+function fillQuery(query, language) {
+    document.getElementById('queryText').value = query;
+    document.getElementById('lang_' + language).checked = true;
+}
+
+// Form submission
+document.getElementById('voiceForm').addEventListener('submit', function() {
+    const btn = this.querySelector('button[type="submit"]');
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+    btn.disabled = true;
+});
+</script>
+{% endblock %}
