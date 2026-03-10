@@ -1,0 +1,286 @@
+{% extends 'base.html' %}
+
+{% block title %}Pesticide Toxicity Analyzer - Krushirakshak{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-12">
+            <h2 class="mb-4">
+                <i class="fas fa-skull-crossbones text-danger"></i> Pesticide Toxicity Analyzer
+            </h2>
+            <p class="lead text-muted">Upload pesticide image or select from list to check toxicity level</p>
+            <p class="text-muted">कीटकनाशकाची प्रतिमा अपलोड करा किंवा यादीतून निवडा आणि विषारीपणा तपासा</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Input Form -->
+        <div class="col-lg-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0"><i class="fas fa-flask"></i> Analyze Pesticide</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Upload Pesticide Image</label>
+                            <input type="file" class="form-control" name="pesticide_image" accept="image/*">
+                            <small class="text-muted">Upload photo of pesticide bottle/label</small>
+                        </div>
+
+                        <div class="text-center mb-3">
+                            <strong>OR</strong>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Select Pesticide</label>
+                            <select class="form-control" name="pesticide_name">
+                                <option value="">Choose from list</option>
+                                {% for pesticide in available_pesticides %}
+                                <option value="{{ pesticide.id }}">{{ pesticide.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-danger w-100 btn-lg">
+                            <i class="fas fa-search"></i> Analyze Toxicity
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Info Card -->
+            <div class="card shadow-sm mt-3">
+                <div class="card-body">
+                    <h6 class="text-danger"><i class="fas fa-info-circle"></i> About This Tool</h6>
+                    <p class="small text-muted mb-0">
+                        This tool analyzes pesticide toxicity levels and provides safety information. Know the risks before using any pesticide!
+                    </p>
+                    <p class="small text-muted mb-0 mt-2">
+                        हे साधन कीटकनाशकांचे विषारीपणा स्तर तपासते आणि सुरक्षा माहिती देते. कोणतेही कीटकनाशक वापरण्यापूर्वी धोके जाणून घ्या!
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results -->
+        <div class="col-lg-8">
+            {% if analysis_result and analysis_result.success %}
+                
+                {% for pesticide in analysis_result.detected_pesticides %}
+                <!-- Pesticide Analysis Card -->
+                <div class="card shadow-sm mb-4 border-{{ pesticide.color }}">
+                    <div class="card-header bg-{{ pesticide.color }} text-white">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h4 class="mb-0">
+                                <i class="fas {{ pesticide.recommendation.icon }}"></i>
+                                {{ pesticide.name }}
+                            </h4>
+                            {% if pesticide.detected %}
+                            <span class="badge bg-light text-dark">{{ pesticide.confidence }}% Confidence</span>
+                            {% endif %}
+                        </div>
+                        <p class="mb-0 mt-2"><strong>{{ pesticide.name_marathi }}</strong></p>
+                    </div>
+                    <div class="card-body">
+                        <!-- Toxicity Score -->
+                        <div class="alert alert-{{ pesticide.recommendation.color }} mb-4">
+                            <div class="row align-items-center">
+                                <div class="col-md-8">
+                                    <h5 class="mb-2">
+                                        <i class="fas {{ pesticide.recommendation.icon }}"></i>
+                                        Toxicity Level: {{ pesticide.recommendation.level }}
+                                    </h5>
+                                    <p class="mb-1"><strong>{{ pesticide.recommendation.message }}</strong></p>
+                                    <p class="mb-0">{{ pesticide.recommendation.message_en }}</p>
+                                </div>
+                                <div class="col-md-4 text-center">
+                                    <div class="display-4 fw-bold">{{ pesticide.toxicity_score }}/100</div>
+                                    <small>Toxicity Score</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Basic Information -->
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <h6 class="text-primary"><i class="fas fa-tag"></i> Basic Information</h6>
+                                <p class="mb-1"><strong>Category:</strong> {{ pesticide.category }}</p>
+                                <p class="mb-1"><strong>WHO Class:</strong> {{ pesticide.toxicity_class }}</p>
+                                <p class="mb-1"><strong>Toxicity Level:</strong> {{ pesticide.toxicity_level }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <h6 class="text-warning"><i class="fas fa-flask"></i> LD50 Values</h6>
+                                <p class="mb-1"><strong>Oral:</strong> {{ pesticide.ld50_oral }}</p>
+                                <p class="mb-1"><strong>Dermal:</strong> {{ pesticide.ld50_dermal }}</p>
+                                <small class="text-muted">Lower LD50 = More toxic</small>
+                            </div>
+                        </div>
+
+                        <!-- Harmful Effects -->
+                        <div class="mb-4">
+                            <h6 class="text-danger"><i class="fas fa-exclamation-triangle"></i> Harmful Effects (हानिकारक परिणाम)</h6>
+                            <ul class="list-group">
+                                {% for effect in pesticide.harmful_effects %}
+                                <li class="list-group-item border-danger">
+                                    <i class="fas fa-times-circle text-danger"></i> {{ effect }}
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+
+                        <!-- Safety Precautions -->
+                        <div class="mb-4">
+                            <h6 class="text-success"><i class="fas fa-shield-alt"></i> Safety Precautions (सुरक्षा उपाय)</h6>
+                            <ul class="list-group">
+                                {% for precaution in pesticide.safety_precautions %}
+                                <li class="list-group-item border-success">
+                                    <i class="fas fa-check-circle text-success"></i> {{ precaution }}
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+
+                        <!-- Environmental Impact -->
+                        <div class="alert alert-info mb-4">
+                            <h6><i class="fas fa-leaf"></i> Environmental Impact</h6>
+                            <p class="mb-0"><strong>{{ pesticide.environmental_impact }}</strong></p>
+                        </div>
+
+                        <!-- Waiting Period -->
+                        <div class="alert alert-warning mb-4">
+                            <h6><i class="fas fa-clock"></i> Waiting Period Before Harvest</h6>
+                            <p class="mb-0"><strong>{{ pesticide.waiting_period }}</strong></p>
+                            <small>पिकाची कापणी करण्यापूर्वी प्रतीक्षा कालावधी</small>
+                        </div>
+
+                        <!-- Safer Alternatives -->
+                        <div class="card bg-light">
+                            <div class="card-body">
+                                <h6 class="text-success"><i class="fas fa-leaf"></i> Safer Alternatives (सुरक्षित पर्याय)</h6>
+                                <ul class="mb-0">
+                                    {% for alternative in pesticide.safer_alternatives %}
+                                    <li class="text-success"><strong>{{ alternative }}</strong></li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+
+                <!-- General Safety Tips -->
+                <div class="card shadow-sm border-warning">
+                    <div class="card-header bg-warning">
+                        <h5 class="mb-0"><i class="fas fa-lightbulb"></i> General Safety Tips</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6 class="text-danger">Before Use (वापरण्यापूर्वी)</h6>
+                                <ul class="small">
+                                    <li>Read label carefully</li>
+                                    <li>Wear protective equipment</li>
+                                    <li>Check weather conditions</li>
+                                    <li>Keep children and pets away</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h6 class="text-primary">During Use (वापरताना)</h6>
+                                <ul class="small">
+                                    <li>Follow recommended dosage</li>
+                                    <li>Avoid spray drift</li>
+                                    <li>Don't eat, drink or smoke</li>
+                                    <li>Spray in morning or evening</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h6 class="text-success">After Use (वापरानंतर)</h6>
+                                <ul class="small">
+                                    <li>Wash hands and face thoroughly</li>
+                                    <li>Bathe with soap</li>
+                                    <li>Wash contaminated clothes separately</li>
+                                    <li>Store pesticide safely</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h6 class="text-warning">Emergency (आपत्कालीन)</h6>
+                                <ul class="small">
+                                    <li>If swallowed: Seek medical help immediately</li>
+                                    <li>If on skin: Wash with soap and water</li>
+                                    <li>If in eyes: Rinse with water for 15 minutes</li>
+                                    <li>Call poison control: 1066</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            {% else %}
+                <!-- Default State -->
+                <div class="card shadow-sm">
+                    <div class="card-body text-center py-5">
+                        <i class="fas fa-flask fa-5x text-danger mb-4" style="opacity: 0.3;"></i>
+                        <h4 class="text-muted mb-3">Pesticide Toxicity Analyzer</h4>
+                        <p class="text-muted mb-4">Upload a pesticide image or select from the list to check toxicity</p>
+                        
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <div class="card border-danger">
+                                    <div class="card-body">
+                                        <i class="fas fa-skull-crossbones fa-2x text-danger mb-2"></i>
+                                        <h6>Toxicity Level</h6>
+                                        <p class="small text-muted mb-0">Know how harmful the pesticide is</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <div class="card border-warning">
+                                    <div class="card-body">
+                                        <i class="fas fa-shield-alt fa-2x text-warning mb-2"></i>
+                                        <h6>Safety Precautions</h6>
+                                        <p class="small text-muted mb-0">Learn how to use safely</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <div class="card border-success">
+                                    <div class="card-body">
+                                        <i class="fas fa-leaf fa-2x text-success mb-2"></i>
+                                        <h6>Safer Alternatives</h6>
+                                        <p class="small text-muted mb-0">Find organic options</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-info mt-4">
+                            <h6><i class="fas fa-info-circle"></i> Why Check Pesticide Toxicity?</h6>
+                            <ul class="text-start small mb-0">
+                                <li>Protect your health and family</li>
+                                <li>Understand environmental impact</li>
+                                <li>Learn proper safety measures</li>
+                                <li>Find safer alternatives</li>
+                                <li>Follow correct waiting periods</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script type="text/javascript">
+document.querySelector('form').addEventListener('submit', function() {
+    var btn = this.querySelector('button[type="submit"]');
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Analyzing...';
+    btn.disabled = true;
+});
+</script>
+{% endblock %}
