@@ -1,0 +1,136 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <a href="{% url 'fertilizer_dashboard' %}" class="btn btn-outline-secondary mb-2">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </a>
+            <h1>🌿 Organic Fertilizer Suggestions</h1>
+        </div>
+        {% if not user.is_authenticated %}
+        <div>
+            <a href="{% url 'login' %}" class="btn btn-outline-primary me-2">Login</a>
+            <a href="{% url 'register' %}" class="btn btn-primary">Register</a>
+        </div>
+        {% endif %}
+    </div>
+    
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5>Get Suggestions</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Crop Type</label>
+                            <input type="text" name="crop_type" class="form-control" placeholder="e.g., Vegetables, Cotton" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Soil Condition</label>
+                            <select name="soil_condition" class="form-control" required>
+                                <option value="poor">Poor</option>
+                                <option value="moderate">Moderate</option>
+                                <option value="good">Good</option>
+                            </select>
+                        </div>
+
+                        <button type="submit" class="btn btn-success btn-lg w-100">Get Suggestions</button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card mt-3">
+                <div class="card-body">
+                    <h6>Benefits of Organic Fertilizers</h6>
+                    <ul class="small">
+                        <li>Improves soil structure</li>
+                        <li>Enhances water retention</li>
+                        <li>Promotes beneficial microbes</li>
+                        <li>Environmentally friendly</li>
+                        <li>Long-lasting nutrients</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            {% if suggestions %}
+            <h4 class="mb-3">Recommended Organic Fertilizers</h4>
+            {% for fertilizer in suggestions %}
+            <div class="card mb-3 shadow-sm">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <h4 class="text-success">{{ fertilizer.name }}</h4>
+                            
+                            <h6 class="mt-3">Nutrient Content</h6>
+                            <div class="row text-center mb-3">
+                                <div class="col-4">
+                                    <div class="badge bg-primary p-2">
+                                        <div>Nitrogen</div>
+                                        <h5>{{ fertilizer.nutrient_content.N }}%</h5>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="badge bg-info p-2">
+                                        <div>Phosphorus</div>
+                                        <h5>{{ fertilizer.nutrient_content.P }}%</h5>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="badge bg-warning p-2">
+                                        <div>Potassium</div>
+                                        <h5>{{ fertilizer.nutrient_content.K }}%</h5>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <p><strong>Suitable Crops:</strong> {{ fertilizer.suitable_crops }}</p>
+                            <p><strong>Soil Types:</strong> {{ fertilizer.suitable_soil_types }}</p>
+                            <p><strong>Application Rate:</strong> <span class="badge bg-success">{{ fertilizer.application_rate }}</span></p>
+                            
+                            <div class="alert alert-light mt-2">
+                                <strong>Benefits:</strong> {{ fertilizer.benefits }}
+                            </div>
+                        </div>
+                        <div class="col-md-4 text-center">
+                            <i class="fas fa-leaf fa-5x text-success mb-3"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+            {% elif all_organic %}
+            <h4 class="mb-3">Available Organic Fertilizers</h4>
+            <div class="row">
+                {% for fertilizer in all_organic %}
+                <div class="col-md-6 mb-3">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h5 class="text-success">{{ fertilizer.name }}</h5>
+                            <p class="small mb-2">{{ fertilizer.benefits|truncatewords:15 }}</p>
+                            <p class="mb-0"><strong>Rate:</strong> {{ fertilizer.application_rate }}</p>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="card">
+                <div class="card-body text-center">
+                    <i class="fas fa-seedling fa-3x text-muted mb-3"></i>
+                    <p class="text-muted">Submit the form to get organic fertilizer suggestions</p>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

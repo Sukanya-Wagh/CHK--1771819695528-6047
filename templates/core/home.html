@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<!-- Hero Section Only -->
+<section class="hero-section" style="min-height: 100vh; display: flex; align-items: center; justify-content: center;">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8 text-center">
+                <h1 class="display-3 fw-bold mb-4" style="text-shadow: 3px 3px 10px rgba(0,0,0,0.8); font-size: 4.5rem;">
+                    <i class="fas fa-seedling"></i> Krushirakshak
+                </h1>
+                <p class="lead mb-5" style="text-shadow: 2px 2px 8px rgba(0,0,0,0.8); font-size: 1.8rem; font-weight: 500;">
+                    Your AI Guardian for Smarter Farming
+                </p>
+                <a href="{% url 'login' %}" class="btn btn-light btn-lg px-5 py-3" style="font-size: 1.3rem; border-radius: 50px; box-shadow: 0 8px 20px rgba(0,0,0,0.3);">
+                    <i class="fas fa-rocket"></i> Get Started
+                </a>
+                <p class="mt-4" style="text-shadow: 2px 2px 6px rgba(0,0,0,0.8); font-size: 1.1rem; opacity: 0.95;">
+                    Powered by <strong>AI Angels</strong>
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Background image slideshow
+document.addEventListener('DOMContentLoaded', function() {
+    const images = [
+        '/static/images.jfif',
+        '/static/images (1).jfif',
+        '/static/images (2).jfif',
+        '/static/images (3).jfif',
+        '/static/images (4).jfif'
+    ];
+    
+    let currentIndex = 0;
+    const heroSection = document.querySelector('.hero-section');
+    
+    function changeBackground() {
+        currentIndex = (currentIndex + 1) % images.length;
+        heroSection.style.backgroundImage = `url('${images[currentIndex]}')`;
+    }
+    
+    // Change image every 3 seconds
+    setInterval(changeBackground, 3000);
+});
+</script>
+{% endblock %}

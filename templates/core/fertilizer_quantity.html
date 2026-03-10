@@ -1,0 +1,144 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <a href="{% url 'fertilizer_dashboard' %}" class="btn btn-outline-secondary mb-2">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </a>
+            <h1>⚖️ Fertilizer Quantity Calculator</h1>
+        </div>
+        {% if not user.is_authenticated %}
+        <div>
+            <a href="{% url 'login' %}" class="btn btn-outline-primary me-2">Login</a>
+            <a href="{% url 'register' %}" class="btn btn-primary">Register</a>
+        </div>
+        {% endif %}
+    </div>
+    
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5>Input Details</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Crop Type</label>
+                            <input type="text" name="crop_type" class="form-control" placeholder="e.g., Rice, Wheat, Cotton" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Farm Area</label>
+                            <input type="number" name="farm_area" class="form-control" step="0.1" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Area Unit</label>
+                            <select name="area_unit" class="form-control" required>
+                                <option value="hectare">Hectare</option>
+                                <option value="acre">Acre</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Fertilizer Type</label>
+                            <select name="fertilizer_type" class="form-control" required>
+                                <option value="Urea">Urea (46-0-0)</option>
+                                <option value="DAP">DAP (18-46-0)</option>
+                                <option value="NPK">NPK (20-20-20)</option>
+                                <option value="MOP">MOP (0-0-60)</option>
+                                <option value="SSP">SSP (0-16-0)</option>
+                            </select>
+                        </div>
+
+                        <button type="submit" class="btn btn-info btn-lg w-100">Calculate Quantity</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            {% if calculation %}
+            <div class="card border-success">
+                <div class="card-header bg-success text-white">
+                    <h5>✅ Calculation Result</h5>
+                </div>
+                <div class="card-body">
+                    <h4>{{ calculation.fertilizer_type }}</h4>
+                    <p class="text-muted">For {{ calculation.crop_type }}</p>
+                    
+                    <hr>
+                    
+                    <div class="row text-center mb-3">
+                        <div class="col-6">
+                            <h6>Farm Area</h6>
+                            <h3 class="text-primary">{{ calculation.farm_area }}</h3>
+                            <p>{{ calculation.area_unit }}</p>
+                        </div>
+                        <div class="col-6">
+                            <h6>Per {{ calculation.area_unit|title }}</h6>
+                            <h3 class="text-info">{{ calculation.quantity_per_unit|floatformat:1 }}</h3>
+                            <p>kg</p>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-success text-center">
+                        <h5>Total Required Quantity</h5>
+                        <h2 class="mb-0">{{ calculation.total_quantity|floatformat:1 }} kg</h2>
+                    </div>
+
+                    <div class="card bg-light">
+                        <div class="card-body">
+                            <h6>Application Method</h6>
+                            <p class="mb-0">{{ calculation.application_method }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="card">
+                <div class="card-body text-center">
+                    <i class="fas fa-calculator fa-3x text-muted mb-3"></i>
+                    <p class="text-muted">Enter details to calculate fertilizer quantity</p>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if recent_calculations %}
+    <div class="mt-4">
+        <h4>Recent Calculations</h4>
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Crop</th>
+                        <th>Fertilizer</th>
+                        <th>Area</th>
+                        <th>Total Quantity</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for calc in recent_calculations %}
+                    <tr>
+                        <td>{{ calc.crop_type }}</td>
+                        <td>{{ calc.fertilizer_type }}</td>
+                        <td>{{ calc.farm_area }} {{ calc.area_unit }}</td>
+                        <td><strong>{{ calc.total_quantity|floatformat:1 }} kg</strong></td>
+                        <td>{{ calc.created_at|date:"M d" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

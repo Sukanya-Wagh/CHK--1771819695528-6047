@@ -1,0 +1,393 @@
+{% extends 'base.html' %}
+
+{% block title %}Disease Spread Map - FarmSphere{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-12">
+            <h2 class="mb-4">
+                <i class="fas fa-map text-info"></i> Disease Spread Map
+            </h2>
+            <p class="lead">Interactive map showing disease reports across different farms</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Map Controls -->
+        <div class="col-lg-3">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-filter"></i> Map Filters</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label">Disease Type</label>
+                        <select class="form-control" id="diseaseFilter">
+                            <option value="">All Diseases</option>
+                            <option value="Late Blight">Late Blight</option>
+                            <option value="Fungal Blight">Fungal Blight</option>
+                            <option value="Bacterial Spot">Bacterial Spot</option>
+                            <option value="Viral Mosaic">Viral Mosaic</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Severity Level</label>
+                        <select class="form-control" id="severityFilter">
+                            <option value="">All Levels</option>
+                            <option value="low">Low</option>
+                            <option value="medium">Medium</option>
+                            <option value="high">High</option>
+                            <option value="critical">Critical</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Verification Status</label>
+                        <select class="form-control" id="verifiedFilter">
+                            <option value="">All Reports</option>
+                            <option value="true">Verified Only</option>
+                            <option value="false">Unverified Only</option>
+                        </select>
+                    </div>
+                    
+                    <button class="btn btn-primary w-100" onclick="applyFilters()">
+                        <i class="fas fa-search"></i> Apply Filters
+                    </button>
+                </div>
+            </div>
+
+            <!-- Statistics -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h6><i class="fas fa-chart-bar"></i> Statistics</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-12 mb-2">
+                            <h4 id="totalReports">{{ reports_count }}</h4>
+                            <small class="text-muted">Total Reports</small>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-3">
+                        <h6>Severity Distribution</h6>
+                        <div class="progress mb-2" style="height: 20px;">
+                            <div class="progress-bar bg-success" style="width: 30%">Low</div>
+                            <div class="progress-bar bg-warning" style="width: 40%">Medium</div>
+                            <div class="progress-bar bg-danger" style="width: 30%">High</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Map Container -->
+        <div class="col-lg-9">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5><i class="fas fa-globe"></i> Disease Reports Map</h5>
+                    <div>
+                        <button class="btn btn-sm btn-outline-primary" onclick="centerMap()">
+                            <i class="fas fa-crosshairs"></i> Center Map
+                        </button>
+                        <button class="btn btn-sm btn-outline-success" onclick="refreshMap()">
+                            <i class="fas fa-sync"></i> Refresh
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div id="diseaseMap" class="map-container" style="height: 500px; width: 100%;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Reports Table -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-list"></i> Recent Disease Reports</h5>
+                </div>
+                <div class="card-body">
+                    {% if map_data %}
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Disease</th>
+                                        <th>Farm</th>
+                                        <th>Crop</th>
+                                        <th>Severity</th>
+                                        <th>Date</th>
+                                        <th>Status</th>
+                                        <th>Location</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="reportsTable">
+                                    <!-- Reports will be populated by JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-exclamation-circle fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">No Disease Reports Found</h5>
+                            <p class="text-muted">No disease reports have been submitted yet.</p>
+                            <a href="{% url 'disease_report_create' %}" class="btn btn-primary">
+                                <i class="fas fa-plus"></i> Submit First Report
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Map data from Django
+const mapData = {{ map_data|safe }};
+let map;
+let markers = [];
+
+// Initialize map
+function initMap() {
+    // Create map centered on USA
+    map = L.map('diseaseMap').setView([39.8283, -98.5795], 4);
+    
+    // Add tile layer
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+    
+    // Add markers for disease reports
+    addMarkersToMap(mapData);
+    
+    // Populate reports table
+    populateReportsTable(mapData);
+}
+
+function addMarkersToMap(data) {
+    // Clear existing markers
+    markers.forEach(marker => map.removeLayer(marker));
+    markers = [];
+    
+    if (!data || data.length === 0) {
+        // Add sample markers for demo
+        const sampleData = [
+            {
+                lat: 41.8781,
+                lng: -87.6298,
+                disease: 'Late Blight',
+                severity: 'high',
+                farm: 'Green Valley Farm',
+                crop: 'Tomato',
+                date: '2024-02-08',
+                verified: true
+            },
+            {
+                lat: 40.7128,
+                lng: -74.0060,
+                disease: 'Fungal Blight',
+                severity: 'medium',
+                farm: 'Sunny Acres',
+                crop: 'Corn',
+                date: '2024-02-07',
+                verified: true
+            },
+            {
+                lat: 34.0522,
+                lng: -118.2437,
+                disease: 'Bacterial Spot',
+                severity: 'low',
+                farm: 'Pacific Farm',
+                crop: 'Pepper',
+                date: '2024-02-06',
+                verified: false
+            }
+        ];
+        data = sampleData;
+    }
+    
+    data.forEach(report => {
+        // Choose marker color based on severity
+        let markerColor = 'green';
+        if (report.severity === 'high' || report.severity === 'critical') {
+            markerColor = 'red';
+        } else if (report.severity === 'medium') {
+            markerColor = 'orange';
+        }
+        
+        // Create custom icon
+        const icon = L.divIcon({
+            className: 'custom-marker',
+            html: `<div style="background-color: ${markerColor}; width: 20px; height: 20px; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);"></div>`,
+            iconSize: [20, 20],
+            iconAnchor: [10, 10]
+        });
+        
+        // Create marker
+        const marker = L.marker([report.lat, report.lng], { icon: icon });
+        
+        // Create popup content
+        const popupContent = `
+            <div class="disease-popup">
+                <h6><strong>${report.disease}</strong></h6>
+                <p><strong>Farm:</strong> ${report.farm}</p>
+                <p><strong>Crop:</strong> ${report.crop}</p>
+                <p><strong>Severity:</strong> <span class="badge bg-${getSeverityColor(report.severity)}">${report.severity}</span></p>
+                <p><strong>Date:</strong> ${report.date}</p>
+                <p><strong>Status:</strong> ${report.verified ? '<span class="badge bg-success">Verified</span>' : '<span class="badge bg-warning">Pending</span>'}</p>
+            </div>
+        `;
+        
+        marker.bindPopup(popupContent);
+        marker.addTo(map);
+        markers.push(marker);
+    });
+}
+
+function getSeverityColor(severity) {
+    switch(severity) {
+        case 'critical':
+        case 'high':
+            return 'danger';
+        case 'medium':
+            return 'warning';
+        case 'low':
+            return 'success';
+        default:
+            return 'secondary';
+    }
+}
+
+function populateReportsTable(data) {
+    const tableBody = document.getElementById('reportsTable');
+    if (!tableBody) return;
+    
+    if (!data || data.length === 0) {
+        // Use sample data for demo
+        data = [
+            {
+                disease: 'Late Blight',
+                farm: 'Green Valley Farm',
+                crop: 'Tomato',
+                severity: 'high',
+                date: '2024-02-08',
+                verified: true,
+                lat: 41.8781,
+                lng: -87.6298
+            },
+            {
+                disease: 'Fungal Blight',
+                farm: 'Sunny Acres',
+                crop: 'Corn',
+                severity: 'medium',
+                date: '2024-02-07',
+                verified: true,
+                lat: 40.7128,
+                lng: -74.0060
+            }
+        ];
+    }
+    
+    tableBody.innerHTML = '';
+    
+    data.forEach(report => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${report.disease}</td>
+            <td>${report.farm}</td>
+            <td>${report.crop}</td>
+            <td><span class="badge bg-${getSeverityColor(report.severity)}">${report.severity}</span></td>
+            <td>${report.date}</td>
+            <td>${report.verified ? '<span class="badge bg-success">Verified</span>' : '<span class="badge bg-warning">Pending</span>'}</td>
+            <td>${report.lat.toFixed(4)}, ${report.lng.toFixed(4)}</td>
+        `;
+        tableBody.appendChild(row);
+    });
+}
+
+function applyFilters() {
+    // Get filter values
+    const diseaseFilter = document.getElementById('diseaseFilter').value;
+    const severityFilter = document.getElementById('severityFilter').value;
+    const verifiedFilter = document.getElementById('verifiedFilter').value;
+    
+    // Filter data
+    let filteredData = mapData;
+    
+    if (diseaseFilter) {
+        filteredData = filteredData.filter(report => report.disease === diseaseFilter);
+    }
+    
+    if (severityFilter) {
+        filteredData = filteredData.filter(report => report.severity === severityFilter);
+    }
+    
+    if (verifiedFilter) {
+        const isVerified = verifiedFilter === 'true';
+        filteredData = filteredData.filter(report => report.verified === isVerified);
+    }
+    
+    // Update map and table
+    addMarkersToMap(filteredData);
+    populateReportsTable(filteredData);
+    
+    // Update statistics
+    document.getElementById('totalReports').textContent = filteredData.length;
+}
+
+function centerMap() {
+    if (markers.length > 0) {
+        const group = new L.featureGroup(markers);
+        map.fitBounds(group.getBounds().pad(0.1));
+    } else {
+        map.setView([39.8283, -98.5795], 4);
+    }
+}
+
+function refreshMap() {
+    location.reload();
+}
+
+// Initialize map when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    initMap();
+});
+</script>
+
+<style>
+.custom-marker {
+    background: transparent;
+    border: none;
+}
+
+.disease-popup {
+    min-width: 200px;
+}
+
+.disease-popup h6 {
+    margin-bottom: 10px;
+    color: #333;
+}
+
+.disease-popup p {
+    margin-bottom: 5px;
+    font-size: 0.9em;
+}
+
+.map-container {
+    border-radius: 0 0 10px 10px;
+}
+
+#diseaseMap {
+    z-index: 1;
+}
+</style>
+{% endblock %}

@@ -1,0 +1,703 @@
+{% extends 'base.html' %}
+
+{% block title %}Crop Health Monitoring - Krushirakshak{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2 class="mb-2">
+                        <i class="fas fa-heartbeat text-danger"></i> Crop Health Monitoring System
+                    </h2>
+                    <p class="text-muted mb-0">AI-Powered Disease Detection & Health Analysis</p>
+                </div>
+                <div>
+                    <span class="badge bg-success fs-6">
+                        <i class="fas fa-robot"></i> AI Enabled
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Input Panel -->
+        <div class="col-lg-4">
+            <div class="card shadow-sm border-0 sticky-top" style="top: 80px;">
+                <div class="card-header bg-gradient text-white" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                    <h5 class="mb-0">
+                        <i class="fas fa-microscope"></i> Analysis Input
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <!-- Crop Information -->
+                        <h6 class="text-primary mb-3">
+                            <i class="fas fa-seedling"></i> Crop Information
+                        </h6>
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Crop Type</label>
+                            <select class="form-control" name="crop_type" required>
+                                <option value="">Select Crop</option>
+                                <option value="rice">Rice</option>
+                                <option value="wheat">Wheat</option>
+                                <option value="cotton">Cotton</option>
+                                <option value="tomato">Tomato</option>
+                                <option value="potato">Potato</option>
+                                <option value="corn">Corn/Maize</option>
+                                <option value="soybean">Soybean</option>
+                                <option value="sugarcane">Sugarcane</option>
+                                <option value="onion">Onion</option>
+                                <option value="chili">Chili</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Growth Stage</label>
+                            <select class="form-control" name="growth_stage" required>
+                                <option value="">Select Stage</option>
+                                <option value="seedling">Seedling/Germination (0-15 days)</option>
+                                <option value="vegetative">Vegetative Growth (15-45 days)</option>
+                                <option value="flowering">Flowering (45-75 days)</option>
+                                <option value="fruiting">Fruiting/Maturity (75+ days)</option>
+                            </select>
+                        </div>
+
+                        <hr>
+
+                        <!-- Image Upload -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-camera text-primary"></i> Upload Crop Image
+                            </label>
+                            <div class="upload-area border-2 border-dashed rounded p-4 text-center" style="border-color: #667eea; background: #f8f9ff;">
+                                <input type="file" class="form-control" name="leaf_image" id="leafImage" accept="image/*" onchange="previewImage(this)">
+                                <div id="imagePreview" class="mt-3"></div>
+                                <small class="text-muted d-block mt-2">
+                                    <i class="fas fa-info-circle"></i> Upload clear image of leaves, stems, or fruits
+                                </small>
+                            </div>
+                        </div>
+
+                        <hr>
+
+                        <!-- Environmental Data -->
+                        <h6 class="text-primary mb-3">
+                            <i class="fas fa-cloud-sun"></i> Environmental Conditions
+                        </h6>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Temperature (&deg;C)</label>
+                                <input type="number" class="form-control" name="temperature" value="28" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Humidity (%)</label>
+                                <input type="number" class="form-control" name="humidity" value="65" required>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Rainfall (mm)</label>
+                                <input type="number" class="form-control" name="rainfall" value="5" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Soil pH</label>
+                                <input type="number" class="form-control" name="soil_ph" value="6.5" step="0.1" required>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Crop Age (days)</label>
+                            <input type="number" class="form-control" name="crop_age" value="45" required>
+                        </div>
+
+                        <hr>
+
+                        <!-- Optional Sensor Data -->
+                        <div class="mb-3">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="sensorToggle" onchange="toggleSensorData()">
+                                <label class="form-check-label fw-bold" for="sensorToggle">
+                                    <i class="fas fa-satellite-dish text-info"></i> Add IoT Sensor Data (Optional)
+                                </label>
+                            </div>
+                        </div>
+
+                        <div id="sensorDataSection" style="display: none;">
+                            <div class="card bg-light mb-3">
+                                <div class="card-body">
+                                    <h6 class="text-info mb-3"><i class="fas fa-microchip"></i> Sensor Readings</h6>
+                                    <div class="row">
+                                        <div class="col-md-6 mb-2">
+                                            <label class="form-label small">Soil Moisture (%)</label>
+                                            <input type="number" class="form-control form-control-sm" name="soil_moisture" value="45">
+                                        </div>
+                                        <div class="col-md-6 mb-2">
+                                            <label class="form-label small">Light Intensity (lux)</label>
+                                            <input type="number" class="form-control form-control-sm" name="light_intensity" value="5000">
+                                        </div>
+                                    </div>
+                                    <small class="text-muted">
+                                        <i class="fas fa-info-circle"></i> Sensor data improves prediction accuracy
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100 btn-lg mt-3" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none;">
+                            <i class="fas fa-search"></i> Analyze Crop Health
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Panel -->
+        <div class="col-lg-8">
+            {% if prediction_result %}
+                <!-- Overall Health Score -->
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-body p-4">
+                        <!-- Crop Info Header -->
+                        <div class="alert alert-info mb-3">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <strong><i class="fas fa-seedling"></i> Crop:</strong> {{ prediction_result.crop_type }}
+                                </div>
+                                <div class="col-md-6">
+                                    <strong><i class="fas fa-chart-line"></i> Growth Stage:</strong> {{ prediction_result.growth_stage }}
+                                </div>
+                            </div>
+                            {% if prediction_result.sensor_data_used %}
+                            <div class="mt-2">
+                                <span class="badge bg-success">
+                                    <i class="fas fa-satellite-dish"></i> IoT Sensor Data Integrated
+                                </span>
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="row align-items-center">
+                            <div class="col-md-8">
+                                <h4 class="mb-3">
+                                    <i class="fas fa-heartbeat text-{{ prediction_result.health_score.color }}"></i> 
+                                    Overall Crop Health
+                                </h4>
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="display-3 fw-bold text-{{ prediction_result.health_score.color }} me-3">
+                                        {{ prediction_result.health_score.score }}
+                                    </div>
+                                    <div>
+                                        <h5 class="text-{{ prediction_result.health_score.color }} mb-1">{{ prediction_result.health_score.status|upper }}</h5>
+                                        <small class="text-muted">Health Status</small>
+                                    </div>
+                                </div>
+                                <div class="progress" style="height: 25px;">
+                                    <div class="progress-bar bg-{{ prediction_result.health_score.color }}" 
+                                         style="width: {{ prediction_result.health_score.score }}%;">
+                                        {{ prediction_result.health_score.score }}%
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 text-center">
+                                <i class="fas fa-leaf fa-5x text-{{ prediction_result.health_score.color }}"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Early Warning Alerts -->
+                {% if prediction_result.early_warnings %}
+                <div class="alert alert-warning">
+                    <h6><i class="fas fa-exclamation-triangle"></i> Early Warnings</h6>
+                    {% for alert in prediction_result.early_warnings|slice:":3" %}
+                    <div class="mb-1"><strong>{{ alert.message }}</strong> - {{ alert.action }}</div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                <!-- Action Buttons -->
+                <div class="d-flex gap-2 mb-4">
+                    <button onclick="window.location.reload()" class="btn btn-outline-primary">
+                        <i class="fas fa-redo"></i> Re-Analyze
+                    </button>
+                    <button onclick="window.print()" class="btn btn-outline-secondary">
+                        <i class="fas fa-print"></i> Print Report
+                    </button>
+                    <button onclick="downloadReport()" class="btn btn-outline-success">
+                        <i class="fas fa-download"></i> Download PDF
+                    </button>
+                </div>
+
+                <!-- Tabbed Analysis -->
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-white p-0">
+                        <ul class="nav nav-tabs nav-fill" id="analysisTabs" role="tablist">
+                            <li class="nav-item">
+                                <a class="nav-link active" id="disease-tab" data-bs-toggle="tab" href="#disease" role="tab">
+                                    <i class="fas fa-virus text-danger"></i><br>Disease Detection
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" id="pest-tab" data-bs-toggle="tab" href="#pest" role="tab">
+                                    <i class="fas fa-bug text-warning"></i><br>Pest Detection
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" id="health-tab" data-bs-toggle="tab" href="#health" role="tab">
+                                    <i class="fas fa-heartbeat text-success"></i><br>Health Scoring
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" id="nutrient-tab" data-bs-toggle="tab" href="#nutrient" role="tab">
+                                    <i class="fas fa-flask text-info"></i><br>Nutrient Analysis
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="card-body">
+                        <div class="tab-content">
+                            <!-- TAB 1: Disease Detection -->
+                            <div class="tab-pane fade show active" id="disease" role="tabpanel">
+                                <h5 class="mb-4 text-danger"><i class="fas fa-virus"></i> Disease Detection Results</h5>
+                                
+                                <!-- Key Metrics -->
+                                <div class="row mb-4">
+                                    <div class="col-md-4">
+                                        <div class="card bg-danger bg-opacity-10 border-danger">
+                                            <div class="card-body text-center">
+                                                <h6 class="text-muted">Detected Disease</h6>
+                                                <h4 class="text-danger">{{ prediction_result.disease_name }}</h4>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="card bg-primary bg-opacity-10 border-primary">
+                                            <div class="card-body text-center">
+                                                <h6 class="text-muted">Confidence</h6>
+                                                <h4 class="text-primary">{{ prediction_result.confidence }}%</h4>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="card bg-warning bg-opacity-10 border-warning">
+                                            <div class="card-body text-center">
+                                                <h6 class="text-muted">Affected Area</h6>
+                                                <h4 class="text-warning">{{ prediction_result.affected_area }}%</h4>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Severity Analysis -->
+                                <div class="alert alert-{% if prediction_result.severity_analysis.severity == 'severe' %}danger{% elif prediction_result.severity_analysis.severity == 'moderate' %}warning{% else %}info{% endif %}">
+                                    <h6><i class="fas fa-exclamation-triangle"></i> Severity: {{ prediction_result.severity_analysis.severity|upper }}</h6>
+                                    <p class="mb-1"><strong>Score:</strong> {{ prediction_result.severity_analysis.severity_score }}/100</p>
+                                    <p class="mb-1"><strong>Action Required:</strong> {{ prediction_result.severity_analysis.action_required|title }}</p>
+                                    <p class="mb-0"><strong>Impact:</strong> {{ prediction_result.severity_analysis.potential_impact }}</p>
+                                </div>
+
+                                <!-- Disease Risk Breakdown -->
+                                <h6 class="mb-3"><i class="fas fa-chart-bar"></i> Disease Risk Breakdown</h6>
+                                {% for disease, risk in prediction_result.risk_scores.items %}
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between mb-1">
+                                        <span>{{ disease|title }}</span>
+                                        <strong>{{ risk }}%</strong>
+                                    </div>
+                                    <div class="progress" style="height: 20px;">
+                                        <div class="progress-bar {% if risk > 70 %}bg-danger{% elif risk > 40 %}bg-warning{% else %}bg-success{% endif %}" 
+                                             style="width: {{ risk }}%;"></div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+
+                                <!-- Treatment Options -->
+                                <div class="row mt-4">
+                                    <div class="col-md-6">
+                                        <div class="card border-success">
+                                            <div class="card-header bg-success text-white">
+                                                <i class="fas fa-flask"></i> Chemical Treatment
+                                            </div>
+                                            <div class="card-body">
+                                                <p class="mb-0">{{ prediction_result.treatment_chemical }}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="card border-success">
+                                            <div class="card-header bg-success text-white">
+                                                <i class="fas fa-leaf"></i> Organic Treatment
+                                            </div>
+                                            <div class="card-body">
+                                                <p class="mb-0">{{ prediction_result.treatment_organic }}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Prevention -->
+                                <div class="mt-4">
+                                    <h6><i class="fas fa-shield-alt"></i> Prevention Measures</h6>
+                                    <ul>
+                                        {% for measure in prediction_result.prevention %}
+                                        <li>{{ measure }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+
+                                <!-- AI Recommendations -->
+                                <div class="mt-4">
+                                    <div class="card bg-primary bg-opacity-10 border-primary">
+                                        <div class="card-header bg-primary text-white">
+                                            <h6 class="mb-0"><i class="fas fa-robot"></i> AI-Powered Recommendations</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            {% for rec in prediction_result.ai_recommendations.disease %}
+                                            <div class="alert alert-{% if rec.priority == 'critical' %}danger{% elif rec.priority == 'high' %}warning{% elif rec.priority == 'medium' %}info{% else %}success{% endif %} mb-2">
+                                                <i class="fas fa-{{ rec.icon }}"></i> <strong>{{ rec.text }}</strong>
+                                            </div>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- TAB 2: Pest Detection -->
+                            <div class="tab-pane fade" id="pest" role="tabpanel">
+                                <h5 class="mb-4 text-warning"><i class="fas fa-bug"></i> Pest Detection Results</h5>
+                                
+                                {% if prediction_result.pest_detections %}
+                                <div class="row">
+                                    {% for pest in prediction_result.pest_detections %}
+                                    <div class="col-md-6 mb-3">
+                                        <div class="card border-{% if pest.intensity == 'high' %}danger{% elif pest.intensity == 'medium' %}warning{% else %}success{% endif %}">
+                                            <div class="card-header bg-{% if pest.intensity == 'high' %}danger{% elif pest.intensity == 'medium' %}warning{% else %}success{% endif %} text-white">
+                                                <div class="d-flex justify-content-between">
+                                                    <span><i class="fas fa-bug"></i> {{ pest.pest_type|title }}</span>
+                                                    <span class="badge bg-light text-dark">{{ pest.intensity|upper }}</span>
+                                                </div>
+                                            </div>
+                                            <div class="card-body">
+                                                <p class="mb-2"><strong>Description:</strong> {{ pest.description }}</p>
+                                                <p class="mb-2"><strong>Confidence:</strong> {{ pest.confidence }}%</p>
+                                                <p class="mb-2"><strong>Affected Area:</strong> ~{{ pest.affected_area_estimate }}%</p>
+                                                
+                                                <hr>
+                                                <h6 class="text-success"><i class="fas fa-flask"></i> Chemical Treatment</h6>
+                                                <p class="small mb-2">{{ pest.treatment_chemical }}</p>
+                                                
+                                                <h6 class="text-success"><i class="fas fa-leaf"></i> Organic Treatment</h6>
+                                                <p class="small mb-0">{{ pest.treatment_organic }}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                {% else %}
+                                <div class="alert alert-success">
+                                    <i class="fas fa-check-circle"></i> No significant pest activity detected. Continue monitoring.
+                                </div>
+                                {% endif %}
+
+                                <!-- AI Recommendations -->
+                                <div class="mt-4">
+                                    <div class="card bg-warning bg-opacity-10 border-warning">
+                                        <div class="card-header bg-warning text-dark">
+                                            <h6 class="mb-0"><i class="fas fa-robot"></i> AI-Powered Pest Management Recommendations</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            {% for rec in prediction_result.ai_recommendations.pest %}
+                                            <div class="alert alert-{% if rec.priority == 'critical' %}danger{% elif rec.priority == 'high' %}warning{% elif rec.priority == 'medium' %}info{% else %}success{% endif %} mb-2">
+                                                <i class="fas fa-{{ rec.icon }}"></i> <strong>{{ rec.text }}</strong>
+                                            </div>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- TAB 3: Health Scoring -->
+                            <div class="tab-pane fade" id="health" role="tabpanel">
+                                <h5 class="mb-4 text-success"><i class="fas fa-heartbeat"></i> Crop Health Scoring</h5>
+                                
+                                <div class="row text-center mb-4">
+                                    <div class="col-md-4">
+                                        <div class="card">
+                                            <div class="card-body">
+                                                <div class="display-1 text-{{ prediction_result.health_score.color }}">
+                                                    {{ prediction_result.health_score.score }}
+                                                </div>
+                                                <h6 class="text-muted">Health Score</h6>
+                                                <span class="badge bg-{{ prediction_result.health_score.color }}">{{ prediction_result.health_score.status|upper }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="card">
+                                            <div class="card-body">
+                                                <div class="display-1 text-danger">
+                                                    {{ prediction_result.leaf_damage_analysis.damage_percent }}%
+                                                </div>
+                                                <h6 class="text-muted">Leaf Damage</h6>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="card">
+                                            <div class="card-body">
+                                                <div class="display-1 text-success">
+                                                    {{ prediction_result.leaf_damage_analysis.color_uniformity|floatformat:2 }}
+                                                </div>
+                                                <h6 class="text-muted">Color Uniformity</h6>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Health Indicators -->
+                                <h6><i class="fas fa-check-circle"></i> Health Indicators</h6>
+                                <ul class="list-group mb-4">
+                                    {% for indicator in prediction_result.health_score.indicators %}
+                                    <li class="list-group-item">
+                                        <i class="fas fa-check text-{{ prediction_result.health_score.color }}"></i> {{ indicator }}
+                                    </li>
+                                    {% endfor %}
+                                </ul>
+
+                                <!-- Visual Signs -->
+                                {% if prediction_result.leaf_damage_analysis.health_indicators %}
+                                <h6><i class="fas fa-eye"></i> Visual Signs Detected</h6>
+                                <div class="mb-3">
+                                    {% for sign in prediction_result.leaf_damage_analysis.health_indicators %}
+                                    <span class="badge bg-secondary me-2 mb-2">{{ sign|title }}</span>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+
+                                <!-- Historical Trend -->
+                                <h6><i class="fas fa-chart-line"></i> 7-Day Health Trend</h6>
+                                <div class="table-responsive">
+                                    <table class="table table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>Date</th>
+                                                <th>Risk Level</th>
+                                                <th>Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for trend in prediction_result.historical_trend %}
+                                            <tr>
+                                                <td>{{ trend.date }}</td>
+                                                <td>
+                                                    <div class="progress" style="height: 15px; width: 100px;">
+                                                        <div class="progress-bar bg-{% if trend.status == 'high' %}danger{% elif trend.status == 'medium' %}warning{% else %}success{% endif %}" 
+                                                             style="width: {{ trend.risk_level }}%;">{{ trend.risk_level }}%</div>
+                                                    </div>
+                                                </td>
+                                                <td><span class="badge bg-{% if trend.status == 'high' %}danger{% elif trend.status == 'medium' %}warning{% else %}success{% endif %}">{{ trend.status|upper }}</span></td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <!-- AI Recommendations -->
+                                <div class="mt-4">
+                                    <div class="card bg-success bg-opacity-10 border-success">
+                                        <div class="card-header bg-success text-white">
+                                            <h6 class="mb-0"><i class="fas fa-robot"></i> AI-Powered Health Improvement Recommendations</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            {% for rec in prediction_result.ai_recommendations.health %}
+                                            <div class="alert alert-{% if rec.priority == 'critical' %}danger{% elif rec.priority == 'high' %}warning{% elif rec.priority == 'medium' %}info{% else %}success{% endif %} mb-2">
+                                                <i class="fas fa-{{ rec.icon }}"></i> <strong>{{ rec.text }}</strong>
+                                            </div>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- TAB 4: Nutrient Analysis -->
+                            <div class="tab-pane fade" id="nutrient" role="tabpanel">
+                                <h5 class="mb-4 text-info"><i class="fas fa-flask"></i> Nutrient Deficiency Analysis</h5>
+                                
+                                {% if prediction_result.nutrient_deficiencies %}
+                                {% for deficiency in prediction_result.nutrient_deficiencies %}
+                                <div class="card mb-3 border-warning">
+                                    <div class="card-header bg-warning text-dark">
+                                        <h6 class="mb-0">
+                                            <i class="fas fa-atom"></i> {{ deficiency.nutrient|upper }} Deficiency
+                                            <span class="badge bg-danger float-end">{{ deficiency.likelihood|upper }}</span>
+                                        </h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <p class="mb-2"><strong><i class="fas fa-eye"></i> Symptoms:</strong> {{ deficiency.symptoms }}</p>
+                                        
+                                        <div class="row mt-3">
+                                            <div class="col-md-6">
+                                                <h6 class="text-success"><i class="fas fa-flask"></i> Chemical Treatment</h6>
+                                                <p class="small">{{ deficiency.treatment_chemical }}</p>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <h6 class="text-success"><i class="fas fa-leaf"></i> Organic Treatment</h6>
+                                                <p class="small">{{ deficiency.treatment_organic }}</p>
+                                            </div>
+                                        </div>
+
+                                        <div class="mt-2">
+                                            <strong><i class="fas fa-search"></i> Visual Signs:</strong>
+                                            {% for sign in deficiency.visual_signs %}
+                                            <span class="badge bg-secondary me-1">{{ sign }}</span>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                                {% else %}
+                                <div class="alert alert-success">
+                                    <i class="fas fa-check-circle"></i> No nutrient deficiencies detected. Nutrient levels appear balanced.
+                                </div>
+                                {% endif %}
+
+                                <!-- Soil pH Info -->
+                                <div class="card border-info mt-4">
+                                    <div class="card-header bg-info text-white">
+                                        <i class="fas fa-vial"></i> Soil pH Analysis
+                                    </div>
+                                    <div class="card-body">
+                                        <p class="mb-2"><strong>Current pH:</strong> {{ request.POST.soil_ph|default:"6.5" }}</p>
+                                        <p class="mb-0"><strong>Recommendation:</strong> 
+                                        {% if request.POST.soil_ph|floatformat:1|add:"0" < 6.0 %}
+                                            Soil is acidic. Consider adding lime to raise pH.
+                                        {% elif request.POST.soil_ph|floatformat:1|add:"0" > 7.5 %}
+                                            Soil is alkaline. Consider adding sulfur to lower pH.
+                                        {% else %}
+                                            Soil pH is in optimal range (6.0-7.5).
+                                        {% endif %}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <!-- AI Recommendations -->
+                                <div class="mt-4">
+                                    <div class="card bg-info bg-opacity-10 border-info">
+                                        <div class="card-header bg-info text-white">
+                                            <h6 class="mb-0"><i class="fas fa-robot"></i> AI-Powered Nutrient Management Recommendations</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            {% for rec in prediction_result.ai_recommendations.nutrient %}
+                                            <div class="alert alert-{% if rec.priority == 'critical' %}danger{% elif rec.priority == 'high' %}warning{% elif rec.priority == 'medium' %}info{% else %}success{% endif %} mb-2">
+                                                <i class="fas fa-{{ rec.icon }}"></i> <strong>{{ rec.text }}</strong>
+                                            </div>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            {% else %}
+                <!-- Welcome State -->
+                <div class="card shadow-sm border-0">
+                    <div class="card-body text-center py-5">
+                        <i class="fas fa-microscope fa-5x text-primary mb-4" style="opacity: 0.3;"></i>
+                        <h3 class="mb-3">Advanced Crop Health Monitoring</h3>
+                        <p class="text-muted mb-4">Upload a leaf image and provide environmental data for comprehensive analysis</p>
+                        
+                        <div class="row text-start mt-5">
+                            <div class="col-md-6 mb-3">
+                                <div class="card border-danger h-100">
+                                    <div class="card-body">
+                                        <h5 class="text-danger"><i class="fas fa-virus"></i> Disease Detection</h5>
+                                        <ul class="small text-muted">
+                                            <li>AI-powered identification</li>
+                                            <li>Confidence scoring</li>
+                                            <li>Severity analysis</li>
+                                            <li>Treatment recommendations</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="card border-warning h-100">
+                                    <div class="card-body">
+                                        <h5 class="text-warning"><i class="fas fa-bug"></i> Pest Detection</h5>
+                                        <ul class="small text-muted">
+                                            <li>Pest type identification</li>
+                                            <li>Intensity measurement</li>
+                                            <li>Chemical & organic treatments</li>
+                                            <li>Affected area estimation</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="card border-success h-100">
+                                    <div class="card-body">
+                                        <h5 class="text-success"><i class="fas fa-heartbeat"></i> Health Scoring</h5>
+                                        <ul class="small text-muted">
+                                            <li>Overall health score (0-100)</li>
+                                            <li>Leaf damage analysis</li>
+                                            <li>7-day trend tracking</li>
+                                            <li>Visual indicators</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="card border-info h-100">
+                                    <div class="card-body">
+                                        <h5 class="text-info"><i class="fas fa-flask"></i> Nutrient Analysis</h5>
+                                        <ul class="small text-muted">
+                                            <li>NPK & micronutrient detection</li>
+                                            <li>Symptom identification</li>
+                                            <li>Chemical & organic solutions</li>
+                                            <li>pH-based recommendations</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+function previewImage(input) {
+    var preview = document.getElementById('imagePreview');
+    if (input.files && input.files[0]) {
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            preview.innerHTML = '<img src="' + e.target.result + '" class="img-fluid rounded" style="max-height: 200px;">';
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+
+function toggleSensorData() {
+    var sensorSection = document.getElementById('sensorDataSection');
+    var checkbox = document.getElementById('sensorToggle');
+    sensorSection.style.display = checkbox.checked ? 'block' : 'none';
+}
+
+function downloadReport() {
+    alert('PDF download feature coming soon! For now, please use Print to save as PDF.');
+    window.print();
+}
+</script>
+{% endblock %}

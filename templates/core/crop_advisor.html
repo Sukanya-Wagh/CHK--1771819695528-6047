@@ -1,0 +1,345 @@
+{% extends 'base.html' %}
+
+{% block title %}Crop & Fertilizer Advisor - Krushirakshak{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-12">
+            <h2 class="mb-4">
+                <i class="fas fa-seedling text-success"></i> Crop & Fertilizer Advisor
+            </h2>
+            <p class="lead text-muted">Get personalized crop and fertilizer recommendations based on your farm conditions</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-5">
+            <div class="card shadow-sm sticky-top" style="top: 100px;">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fas fa-edit"></i> Farm Information</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" onsubmit="var b=this.querySelector('button[type=submit]');b.innerHTML='<i class=&quot;fas fa-spinner fa-spin&quot;></i> Analyzing...';b.disabled=true;">
+                        {% csrf_token %}
+                        
+                        <h6 class="text-success mb-3"><i class="fas fa-leaf"></i> Crop Details</h6>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Current Crop (Optional)</label>
+                            <select class="form-control" name="crop_name" id="cropName" onchange="var s=document.getElementById('stageSection');var a=document.getElementById('ageSection');if(this.value){s.style.display='block';a.style.display='block';}else{s.style.display='none';a.style.display='none';}">
+                                <option value="">Select if already planted</option>
+                                <option value="rice">Rice</option>
+                                <option value="wheat">Wheat</option>
+                                <option value="cotton">Cotton</option>
+                                <option value="tomato">Tomato</option>
+                                <option value="corn">Corn/Maize</option>
+                                <option value="potato">Potato</option>
+                                <option value="soybean">Soybean</option>
+                                <option value="sugarcane">Sugarcane</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3" id="stageSection" style="display: none;">
+                            <label class="form-label">Growth Stage</label>
+                            <select class="form-control" name="growth_stage" id="growthStage">
+                                <option value="seedling">Seedling/Germination</option>
+                                <option value="vegetative">Vegetative</option>
+                                <option value="flowering">Flowering</option>
+                                <option value="fruiting">Fruiting/Maturity</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3" id="ageSection" style="display: none;">
+                            <label class="form-label">Crop Age (days)</label>
+                            <input type="number" class="form-control" name="crop_age" id="cropAge" min="1" value="30">
+                        </div>
+
+                        <hr>
+                        <h6 class="text-success mb-3"><i class="fas fa-mountain"></i> Soil Information</h6>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Soil Type</label>
+                            <select class="form-control" name="soil_type" id="soilType" required>
+                                <option value="">Select Soil Type</option>
+                                <option value="clay">Clay</option>
+                                <option value="loamy">Loamy</option>
+                                <option value="sandy-loam">Sandy Loam</option>
+                                <option value="clay-loam">Clay Loam</option>
+                                <option value="black">Black Soil</option>
+                                <option value="red">Red Soil</option>
+                            </select>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Nitrogen (N) kg/ha</label>
+                                <input type="number" class="form-control" name="soil_n" id="soilN" value="250" required>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Phosphorus (P) kg/ha</label>
+                                <input type="number" class="form-control" name="soil_p" id="soilP" value="15" required>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Potassium (K) kg/ha</label>
+                                <input type="number" class="form-control" name="soil_k" id="soilK" value="150" required>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Soil pH Level</label>
+                            <input type="number" class="form-control" name="soil_ph" id="soilPh" value="6.5" step="0.1" min="4" max="9" required>
+                        </div>
+
+                        <hr>
+                        <h6 class="text-success mb-3"><i class="fas fa-cloud-sun"></i> Weather & Season</h6>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Season</label>
+                            <select class="form-control" name="season" id="season" required>
+                                <option value="">Select Season</option>
+                                <option value="kharif">Kharif (Monsoon)</option>
+                                <option value="rabi">Rabi (Winter)</option>
+                                <option value="summer">Summer</option>
+                            </select>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Temperature (&deg;C)</label>
+                                <input type="number" class="form-control" name="temperature" id="temperature" value="28" required>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Humidity (%)</label>
+                                <input type="number" class="form-control" name="humidity" id="humidity" value="65" required>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Rainfall (mm)</label>
+                                <input type="number" class="form-control" name="rainfall" id="rainfall" value="100" required>
+                            </div>
+                        </div>
+
+                        <hr>
+                        <h6 class="text-success mb-3"><i class="fas fa-flask"></i> Fertilizer Preference</h6>
+                        
+                        <div class="mb-3">
+                            <select class="form-control" name="fertilizer_preference" id="fertilizerPreference">
+                                <option value="both">Both Organic & Chemical</option>
+                                <option value="organic">Organic Only</option>
+                                <option value="chemical">Chemical Only</option>
+                            </select>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-success w-100 btn-lg">
+                            <i class="fas fa-magic"></i> Get Recommendations
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-7">
+            {% if recommendations %}
+                {% if recommendations.alerts %}
+                <div class="card shadow-sm mb-4 border-danger">
+                    <div class="card-header bg-danger text-white">
+                        <h5 class="mb-0"><i class="fas fa-exclamation-triangle"></i> Critical Alerts</h5>
+                    </div>
+                    <div class="card-body">
+                        {% for alert in recommendations.alerts %}
+                        <div class="alert alert-warning mb-2">
+                            <strong>{{ alert }}</strong>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if recommendations.crop_recommendations %}
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class="fas fa-seedling"></i> Recommended Crops for Your Farm</h5>
+                    </div>
+                    <div class="card-body">
+                        {% for crop in recommendations.crop_recommendations %}
+                        <div class="card mb-3 border-success">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <h5 class="text-success mb-0">
+                                        <i class="fas fa-leaf"></i> {{ crop.crop }}
+                                    </h5>
+                                    <span class="badge bg-success">{{ crop.score }}% Match</span>
+                                </div>
+                                <p class="mb-2"><strong>Duration:</strong> {{ crop.duration }} days</p>
+                                <p class="mb-2"><strong>Why suitable:</strong></p>
+                                <ul class="mb-2">
+                                    {% for reason in crop.reasons %}
+                                    <li>{{ reason }}</li>
+                                    {% endfor %}
+                                </ul>
+                                <p class="mb-0">
+                                    <strong>Rotation options after harvest:</strong> 
+                                    <span class="text-muted">{{ crop.rotation_options|join:", "|title }}</span>
+                                </p>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if recommendations.fertilizer %}
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0"><i class="fas fa-flask"></i> Fertilizer Recommendations</h5>
+                    </div>
+                    <div class="card-body">
+                        <h6 class="text-success">
+                            <i class="fas fa-leaf"></i> {{ recommendations.fertilizer.crop|title }} - {{ recommendations.fertilizer.stage|title }} Stage
+                        </h6>
+                        
+                        <div class="row text-center mb-4">
+                            <div class="col-md-4">
+                                <div class="border rounded p-3 bg-light">
+                                    <h4 class="text-primary mb-1">{{ recommendations.fertilizer.npk_required.N }} kg/ha</h4>
+                                    <small class="text-muted"><strong>Nitrogen (N)</strong></small>
+                                    {% if recommendations.fertilizer.npk_deficit.N > 0 %}
+                                    <p class="text-danger small mb-0">Deficit: {{ recommendations.fertilizer.npk_deficit.N }} kg/ha</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="border rounded p-3 bg-light">
+                                    <h4 class="text-success mb-1">{{ recommendations.fertilizer.npk_required.P }} kg/ha</h4>
+                                    <small class="text-muted"><strong>Phosphorus (P)</strong></small>
+                                    {% if recommendations.fertilizer.npk_deficit.P > 0 %}
+                                    <p class="text-danger small mb-0">Deficit: {{ recommendations.fertilizer.npk_deficit.P }} kg/ha</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="border rounded p-3 bg-light">
+                                    <h4 class="text-warning mb-1">{{ recommendations.fertilizer.npk_required.K }} kg/ha</h4>
+                                    <small class="text-muted"><strong>Potassium (K)</strong></small>
+                                    {% if recommendations.fertilizer.npk_deficit.K > 0 %}
+                                    <p class="text-danger small mb-0">Deficit: {{ recommendations.fertilizer.npk_deficit.K }} kg/ha</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        {% if recommendations.fertilizer.organic_recommendation %}
+                        <div class="alert alert-success">
+                            <h6><i class="fas fa-leaf"></i> Organic Fertilizer</h6>
+                            <p class="mb-0"><strong>{{ recommendations.fertilizer.organic_recommendation }}</strong></p>
+                        </div>
+                        {% endif %}
+
+                        {% if recommendations.fertilizer.chemical_recommendation %}
+                        <div class="alert alert-info">
+                            <h6><i class="fas fa-flask"></i> Chemical Fertilizer</h6>
+                            <p class="mb-0"><strong>{{ recommendations.fertilizer.chemical_recommendation }}</strong></p>
+                        </div>
+                        {% endif %}
+
+                        <h6 class="mt-4 mb-3"><i class="fas fa-calendar-alt"></i> Application Schedule</h6>
+                        <div class="table-responsive">
+                            <table class="table table-bordered">
+                                <thead class="table-success">
+                                    <tr>
+                                        <th>Week</th>
+                                        <th>Date</th>
+                                        <th>Application</th>
+                                        <th>Method</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for schedule in recommendations.fertilizer.schedule %}
+                                    <tr>
+                                        <td><strong>Week {{ schedule.week }}</strong></td>
+                                        <td>{{ schedule.date }}</td>
+                                        <td>{{ schedule.application }}</td>
+                                        <td>{{ schedule.method }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                {% if recommendations.fertilizer.care_tips %}
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-warning text-dark">
+                        <h5 class="mb-0"><i class="fas fa-lightbulb"></i> Stage-Specific Care Tips</h5>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-unstyled">
+                            {% for tip in recommendations.fertilizer.care_tips %}
+                            <li class="mb-2">
+                                <i class="fas fa-check-circle text-success"></i> {{ tip }}
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+                {% endif %}
+                {% endif %}
+
+                {% if recommendations.stage_info %}
+                <div class="card shadow-sm">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0"><i class="fas fa-chart-line"></i> Growth Stage Progress</h5>
+                    </div>
+                    <div class="card-body">
+                        <h6>Current Stage: <span class="text-success">{{ recommendations.stage_info.current_stage|title }}</span></h6>
+                        {% if recommendations.stage_info.next_stage %}
+                        <p>Next Stage: <span class="text-primary">{{ recommendations.stage_info.next_stage|title }}</span></p>
+                        {% endif %}
+                        <div class="progress" style="height: 25px;">
+                            <div class="progress-bar bg-success" role="progressbar" style="width: {{ recommendations.stage_info.progress }}%;" aria-valuenow="{{ recommendations.stage_info.progress }}" aria-valuemin="0" aria-valuemax="100">
+                                {{ recommendations.stage_info.progress }}% Complete
+                            </div>
+                        </div>
+                        <small class="text-muted">Stage {{ recommendations.stage_info.progress|floatformat:0 }}% of {{ recommendations.stage_info.total_stages }} total stages</small>
+                    </div>
+                </div>
+                {% endif %}
+
+            {% else %}
+                <div class="card shadow-sm">
+                    <div class="card-body text-center py-5">
+                        <i class="fas fa-seedling fa-5x text-success mb-4" style="opacity: 0.3;"></i>
+                        <h4 class="text-muted mb-3">Smart Crop & Fertilizer Advisor</h4>
+                        <p class="text-muted mb-4">Fill in your farm details to get personalized recommendations</p>
+                        
+                        <div class="row text-start">
+                            <div class="col-md-6">
+                                <h6 class="text-success"><i class="fas fa-check-circle"></i> Crop Recommendations:</h6>
+                                <ul class="text-muted">
+                                    <li>Best crops for your soil & climate</li>
+                                    <li>Crop rotation suggestions</li>
+                                    <li>Growth stage guidance</li>
+                                    <li>Duration & yield estimates</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h6 class="text-success"><i class="fas fa-flask"></i> Fertilizer Guidance:</h6>
+                                <ul class="text-muted">
+                                    <li>NPK requirements by stage</li>
+                                    <li>Organic & chemical options</li>
+                                    <li>Application schedule</li>
+                                    <li>Stage-specific care tips</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{% endblock %}

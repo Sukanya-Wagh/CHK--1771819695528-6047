@@ -1,0 +1,208 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <a href="{% url 'fertilizer_dashboard' %}" class="btn btn-outline-secondary mb-2">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </a>
+            <h1>🧪 Soil Nutrient Analysis</h1>
+        </div>
+        {% if not user.is_authenticated %}
+        <div>
+            <a href="{% url 'login' %}" class="btn btn-outline-primary me-2">Login</a>
+            <a href="{% url 'register' %}" class="btn btn-primary">Register</a>
+        </div>
+        {% endif %}
+    </div>
+    
+    <div class="row">
+        <div class="col-md-5">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5>Soil Test Data</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <p class="text-muted">Enter your soil test values (kg/ha)</p>
+
+                        <div class="mb-3">
+                            <label class="form-label">Nitrogen (N)</label>
+                            <input type="number" name="nitrogen" class="form-control" step="0.1" placeholder="e.g., 45.5" required>
+                            <small class="text-muted">Typical range: 20-150 kg/ha</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Phosphorus (P)</label>
+                            <input type="number" name="phosphorus" class="form-control" step="0.1" placeholder="e.g., 30.2" required>
+                            <small class="text-muted">Typical range: 10-80 kg/ha</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Potassium (K)</label>
+                            <input type="number" name="potassium" class="form-control" step="0.1" placeholder="e.g., 55.8" required>
+                            <small class="text-muted">Typical range: 20-120 kg/ha</small>
+                        </div>
+
+                        <button type="submit" class="btn btn-info btn-lg w-100">Analyze Soil</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-7">
+            {% if analysis %}
+            <div class="card border-primary">
+                <div class="card-header bg-primary text-white">
+                    <h5>📊 Soil Health Report</h5>
+                    <small>Analysis Date: {{ analysis.analysis_date|date:"F d, Y" }}</small>
+                </div>
+                <div class="card-body">
+                    <h5 class="mb-3">Nutrient Status</h5>
+                    
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span><strong>Nitrogen</strong></span>
+                            <span class="badge 
+                                {% if analysis.nitrogen_level == 'low' %}bg-danger
+                                {% elif analysis.nitrogen_level == 'moderate' %}bg-warning
+                                {% elif analysis.nitrogen_level == 'adequate' %}bg-success
+                                {% else %}bg-info{% endif %}">
+                                {{ analysis.get_nitrogen_level_display }}
+                            </span>
+                        </div>
+                        <div class="progress" style="height: 25px;">
+                            <div class="progress-bar 
+                                {% if analysis.nitrogen_level == 'low' %}bg-danger
+                                {% elif analysis.nitrogen_level == 'moderate' %}bg-warning
+                                {% elif analysis.nitrogen_level == 'adequate' %}bg-success
+                                {% else %}bg-info{% endif %}" 
+                                style="width: {{ analysis.nitrogen_value|floatformat:0 }}%">
+                                {{ analysis.nitrogen_value }} kg/ha
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span><strong>Phosphorus</strong></span>
+                            <span class="badge 
+                                {% if analysis.phosphorus_level == 'low' %}bg-danger
+                                {% elif analysis.phosphorus_level == 'moderate' %}bg-warning
+                                {% elif analysis.phosphorus_level == 'adequate' %}bg-success
+                                {% else %}bg-info{% endif %}">
+                                {{ analysis.get_phosphorus_level_display }}
+                            </span>
+                        </div>
+                        <div class="progress" style="height: 25px;">
+                            <div class="progress-bar 
+                                {% if analysis.phosphorus_level == 'low' %}bg-danger
+                                {% elif analysis.phosphorus_level == 'moderate' %}bg-warning
+                                {% elif analysis.phosphorus_level == 'adequate' %}bg-success
+                                {% else %}bg-info{% endif %}" 
+                                style="width: {{ analysis.phosphorus_value|floatformat:0 }}%">
+                                {{ analysis.phosphorus_value }} kg/ha
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span><strong>Potassium</strong></span>
+                            <span class="badge 
+                                {% if analysis.potassium_level == 'low' %}bg-danger
+                                {% elif analysis.potassium_level == 'moderate' %}bg-warning
+                                {% elif analysis.potassium_level == 'adequate' %}bg-success
+                                {% else %}bg-info{% endif %}">
+                                {{ analysis.get_potassium_level_display }}
+                            </span>
+                        </div>
+                        <div class="progress" style="height: 25px;">
+                            <div class="progress-bar 
+                                {% if analysis.potassium_level == 'low' %}bg-danger
+                                {% elif analysis.potassium_level == 'moderate' %}bg-warning
+                                {% elif analysis.potassium_level == 'adequate' %}bg-success
+                                {% else %}bg-info{% endif %}" 
+                                style="width: {{ analysis.potassium_value|floatformat:0 }}%">
+                                {{ analysis.potassium_value }} kg/ha
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <h5 class="mb-3">Suggested Fertilizers</h5>
+                    {% for fert in analysis.suggested_fertilizers %}
+                    <div class="card bg-light mb-2">
+                        <div class="card-body">
+                            <div class="row align-items-center">
+                                <div class="col-md-6">
+                                    <h6 class="mb-0">{{ fert.name }}</h6>
+                                </div>
+                                <div class="col-md-3">
+                                    <span class="badge bg-success">{{ fert.quantity }}</span>
+                                </div>
+                                <div class="col-md-3">
+                                    <small class="text-muted">{{ fert.reason }}</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% else %}
+            <div class="card">
+                <div class="card-body text-center">
+                    <i class="fas fa-flask fa-3x text-muted mb-3"></i>
+                    <p class="text-muted">Enter soil test data to generate health report</p>
+                    
+                    <div class="alert alert-info text-start mt-3">
+                        <h6>Nutrient Level Guidelines</h6>
+                        <ul class="small mb-0">
+                            <li><strong>Low:</strong> Immediate fertilizer application needed</li>
+                            <li><strong>Moderate:</strong> Maintenance dose recommended</li>
+                            <li><strong>Adequate:</strong> Soil health is good</li>
+                            <li><strong>High:</strong> No additional fertilizer needed</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if recent_analyses %}
+    <div class="mt-4">
+        <h4>Recent Analyses</h4>
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Nitrogen</th>
+                        <th>Phosphorus</th>
+                        <th>Potassium</th>
+                        <th>Recommendations</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for ana in recent_analyses %}
+                    <tr>
+                        <td>{{ ana.analysis_date|date:"M d, Y" }}</td>
+                        <td><span class="badge bg-{{ ana.nitrogen_level }}">{{ ana.get_nitrogen_level_display }}</span></td>
+                        <td><span class="badge bg-{{ ana.phosphorus_level }}">{{ ana.get_phosphorus_level_display }}</span></td>
+                        <td><span class="badge bg-{{ ana.potassium_level }}">{{ ana.get_potassium_level_display }}</span></td>
+                        <td>{{ ana.suggested_fertilizers|length }} fertilizer(s)</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

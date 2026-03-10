@@ -1,0 +1,174 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <a href="{% url 'fertilizer_dashboard' %}" class="btn btn-outline-secondary mb-2">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </a>
+            <h1>🔍 Nutrient Deficiency Detection</h1>
+        </div>
+        {% if not user.is_authenticated %}
+        <div>
+            <a href="{% url 'login' %}" class="btn btn-outline-primary me-2">Login</a>
+            <a href="{% url 'register' %}" class="btn btn-primary">Register</a>
+        </div>
+        {% endif %}
+    </div>
+    
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-warning text-dark">
+                    <h5>Detection Input</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Crop Name</label>
+                            <input type="text" name="crop_name" class="form-control" placeholder="e.g., Rice, Wheat" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Detection Method</label>
+                            <select name="detection_method" class="form-control" id="detectionMethod" required>
+                                <option value="soil_data">Soil Test Data</option>
+                                <option value="leaf_image">Leaf Image Analysis</option>
+                            </select>
+                        </div>
+
+                        <div id="soilDataInputs">
+                            <h6 class="mt-3">Soil Nutrient Data (kg/ha)</h6>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Nitrogen (N)</label>
+                                <input type="number" name="nitrogen" class="form-control" step="0.1">
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Phosphorus (P)</label>
+                                <input type="number" name="phosphorus" class="form-control" step="0.1">
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Potassium (K)</label>
+                                <input type="number" name="potassium" class="form-control" step="0.1">
+                            </div>
+                        </div>
+
+                        <div id="leafImageInput" style="display:none;">
+                            <div class="mb-3">
+                                <label class="form-label">Upload Leaf Image</label>
+                                <input type="file" name="leaf_image" class="form-control" accept="image/*">
+                                <small class="text-muted">Upload a clear image of affected leaves</small>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-warning btn-lg w-100">Detect Deficiency</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            {% if deficiency %}
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h5>⚠️ Deficiency Detected</h5>
+                </div>
+                <div class="card-body">
+                    <h4>{{ deficiency.crop_name }}</h4>
+                    
+                    <div class="alert alert-danger mt-3">
+                        <h5>Deficiency Type</h5>
+                        <h3>{{ deficiency.get_deficiency_type_display }}</h3>
+                    </div>
+
+                    <div class="card bg-light mb-3">
+                        <div class="card-body">
+                            <h6>Symptoms Observed</h6>
+                            <p>{{ deficiency.symptoms }}</p>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-success">
+                        <h6>Recommended Fertilizer</h6>
+                        <h4>{{ deficiency.recommended_fertilizer }}</h4>
+                    </div>
+
+                    <div class="progress mb-2">
+                        <div class="progress-bar bg-success" style="width: {{ deficiency.confidence_score|floatformat:0|add:"0" }}%">
+                            Confidence: {{ deficiency.confidence_score|floatformat:0 }}%
+                        </div>
+                    </div>
+
+                    {% if deficiency.soil_nitrogen %}
+                    <h6 class="mt-3">Soil Nutrient Values</h6>
+                    <ul>
+                        <li>Nitrogen: {{ deficiency.soil_nitrogen }} kg/ha</li>
+                        <li>Phosphorus: {{ deficiency.soil_phosphorus }} kg/ha</li>
+                        <li>Potassium: {{ deficiency.soil_potassium }} kg/ha</li>
+                    </ul>
+                    {% endif %}
+                </div>
+            </div>
+            {% else %}
+            <div class="card">
+                <div class="card-body text-center">
+                    <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                    <p class="text-muted">Select detection method and submit to analyze</p>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if recent_detections %}
+    <div class="mt-4">
+        <h4>Recent Detections</h4>
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Crop</th>
+                        <th>Deficiency</th>
+                        <th>Symptoms</th>
+                        <th>Recommended Fertilizer</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for det in recent_detections %}
+                    <tr>
+                        <td>{{ det.crop_name }}</td>
+                        <td><span class="badge bg-danger">{{ det.get_deficiency_type_display }}</span></td>
+                        <td>{{ det.symptoms|truncatewords:8 }}</td>
+                        <td>{{ det.recommended_fertilizer }}</td>
+                        <td>{{ det.detected_at|date:"M d" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+document.getElementById('detectionMethod').addEventListener('change', function() {
+    const soilInputs = document.getElementById('soilDataInputs');
+    const leafInput = document.getElementById('leafImageInput');
+    
+    if (this.value === 'soil_data') {
+        soilInputs.style.display = 'block';
+        leafInput.style.display = 'none';
+    } else {
+        soilInputs.style.display = 'none';
+        leafInput.style.display = 'block';
+    }
+});
+</script>
+{% endblock %}
