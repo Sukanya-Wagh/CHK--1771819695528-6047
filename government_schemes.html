@@ -1,0 +1,312 @@
+{% extends 'base.html' %}
+
+{% block title %}Government Scheme Recommender - Krushirakshak{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-12">
+            <h2 class="mb-4">
+                <i class="fas fa-landmark text-primary"></i> Government Scheme Recommender
+            </h2>
+            <p class="lead text-muted">Discover government schemes and subsidies you're eligible for</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Input Form -->
+        <div class="col-lg-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-user-farmer"></i> Farmer Profile</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label class="form-label">State</label>
+                            <select class="form-control" name="state" required>
+                                <option value="">Select State</option>
+                                <option value="maharashtra">Maharashtra</option>
+                                <option value="karnataka">Karnataka</option>
+                                <option value="punjab">Punjab</option>
+                                <option value="haryana">Haryana</option>
+                                <option value="uttar pradesh">Uttar Pradesh</option>
+                                <option value="madhya pradesh">Madhya Pradesh</option>
+                                <option value="rajasthan">Rajasthan</option>
+                                <option value="gujarat">Gujarat</option>
+                                <option value="andhra pradesh">Andhra Pradesh</option>
+                                <option value="telangana">Telangana</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">District</label>
+                            <input type="text" class="form-control" name="district" placeholder="e.g., Pune" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Primary Crop</label>
+                            <select class="form-control" name="crop_type">
+                                <option value="">Select Crop</option>
+                                <option value="rice">Rice</option>
+                                <option value="wheat">Wheat</option>
+                                <option value="cotton">Cotton</option>
+                                <option value="soybean">Soybean</option>
+                                <option value="corn">Corn</option>
+                                <option value="sugarcane">Sugarcane</option>
+                                <option value="tomato">Tomato</option>
+                                <option value="potato">Potato</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Land Size (hectares)</label>
+                            <input type="number" class="form-control" name="land_size" value="1.0" step="0.1" min="0" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Irrigation Type</label>
+                            <select class="form-control" name="irrigation_type">
+                                <option value="">Select Type</option>
+                                <option value="drip">Drip Irrigation</option>
+                                <option value="sprinkler">Sprinkler</option>
+                                <option value="rainfed">Rainfed</option>
+                                <option value="canal">Canal</option>
+                                <option value="well">Well/Borewell</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Livestock (if any)</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="livestock" value="cattle" id="cattle">
+                                <label class="form-check-label" for="cattle">Cattle</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="livestock" value="buffalo" id="buffalo">
+                                <label class="form-check-label" for="buffalo">Buffalo</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="livestock" value="goat" id="goat">
+                                <label class="form-check-label" for="goat">Goat</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="livestock" value="poultry" id="poultry">
+                                <label class="form-check-label" for="poultry">Poultry</label>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Land Ownership</label>
+                            <select class="form-control" name="has_land_ownership" required>
+                                <option value="yes">Yes, I own land</option>
+                                <option value="no">No, I'm a tenant farmer</option>
+                            </select>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary w-100 btn-lg">
+                            <i class="fas fa-search"></i> Find Schemes
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Info Card -->
+            <div class="card shadow-sm mt-3">
+                <div class="card-body">
+                    <h6 class="text-primary"><i class="fas fa-info-circle"></i> About This Tool</h6>
+                    <p class="small text-muted mb-0">
+                        This recommender helps you discover government schemes, subsidies, and financial support programs based on your farm profile. Many farmers miss out on benefits - let AI help you find what you're eligible for!
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results -->
+        <div class="col-lg-8">
+            {% if recommendations %}
+                
+                <!-- Summary Card -->
+                <div class="card shadow-sm mb-4 border-primary">
+                    <div class="card-body">
+                        <div class="row text-center">
+                            <div class="col-md-4">
+                                <h2 class="text-primary mb-0">{{ recommendations.total_schemes }}</h2>
+                                <p class="text-muted mb-0">Eligible Schemes</p>
+                            </div>
+                            <div class="col-md-4">
+                                <h2 class="text-success mb-0">{{ recommendations.high_priority_schemes }}</h2>
+                                <p class="text-muted mb-0">High Priority</p>
+                            </div>
+                            <div class="col-md-4">
+                                <h2 class="text-info mb-0"><i class="fas fa-user-check"></i></h2>
+                                <p class="text-muted mb-0">Personalized</p>
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="small text-muted">
+                            <strong>Your Profile:</strong> {{ recommendations.farmer_profile.location }} | 
+                            {{ recommendations.farmer_profile.crop }} | 
+                            {{ recommendations.farmer_profile.land_size }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Eligible Schemes -->
+                {% for scheme in recommendations.eligible_schemes %}
+                <div class="card shadow-sm mb-3">
+                    <div class="card-header {% if scheme.priority == 'high' %}bg-danger text-white{% elif scheme.priority == 'medium' %}bg-warning{% else %}bg-info text-white{% endif %}">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">
+                                <i class="fas fa-{% if scheme.type == 'central' %}flag-india{% else %}map-marker-alt{% endif %}"></i>
+                                {{ scheme.name }}
+                            </h5>
+                            <div>
+                                <span class="badge bg-light text-dark">{{ scheme.score }}% Match</span>
+                                {% if scheme.priority == 'high' %}
+                                <span class="badge bg-white text-danger">HIGH PRIORITY</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <p class="mb-2"><strong>Category:</strong> <span class="badge bg-secondary">{{ scheme.category }}</span></p>
+                                <p class="mb-2"><strong>Benefit:</strong> <span class="text-success">{{ scheme.benefit }}</span></p>
+                                <p class="mb-3">{{ scheme.description }}</p>
+                                
+                                <div class="mb-3">
+                                    <strong class="text-primary"><i class="fas fa-check-circle"></i> Why You're Eligible:</strong>
+                                    <ul class="small mb-0 mt-1">
+                                        {% for reason in scheme.reasons %}
+                                        <li>{{ reason }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+
+                                <div class="mb-2">
+                                    <strong class="text-warning"><i class="fas fa-file-alt"></i> Required Documents:</strong>
+                                    <div class="small mt-1">
+                                        {% for doc in scheme.documents %}
+                                        <span class="badge bg-light text-dark me-1">{{ doc }}</span>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+
+                                <div class="alert alert-info small mb-0 mt-2">
+                                    <i class="fas fa-clock"></i> <strong>Deadline:</strong> {{ scheme.deadline }}
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="d-grid gap-2">
+                                    {% if scheme.application_link and 'http' in scheme.application_link %}
+                                    <a href="{{ scheme.application_link }}" target="_blank" class="btn btn-success">
+                                        <i class="fas fa-external-link-alt"></i> Apply Online
+                                    </a>
+                                    {% else %}
+                                    <button class="btn btn-outline-secondary" disabled>
+                                        <i class="fas fa-building"></i> Visit Office
+                                    </button>
+                                    {% endif %}
+                                    <button class="btn btn-outline-primary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#checklist-{{ forloop.counter }}">
+                                        <i class="fas fa-list-check"></i> Application Checklist
+                                    </button>
+                                </div>
+                                
+                                <div class="collapse mt-3" id="checklist-{{ forloop.counter }}">
+                                    <div class="card card-body small">
+                                        <strong>Application Steps:</strong>
+                                        <ol class="mb-0 ps-3">
+                                            <li>Verify eligibility</li>
+                                            <li>Collect documents</li>
+                                            <li>Visit portal/office</li>
+                                            <li>Fill application form</li>
+                                            <li>Submit & track status</li>
+                                        </ol>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+
+                <!-- Additional Info -->
+                <div class="card shadow-sm border-success">
+                    <div class="card-body">
+                        <h6 class="text-success"><i class="fas fa-lightbulb"></i> Tips for Successful Application</h6>
+                        <ul class="small mb-0">
+                            <li>Keep all documents ready before starting the application</li>
+                            <li>Apply before the deadline - don't wait until the last moment</li>
+                            <li>Save your application reference number for tracking</li>
+                            <li>Contact your local agriculture office for assistance</li>
+                            <li>Check application status regularly</li>
+                        </ul>
+                    </div>
+                </div>
+
+            {% else %}
+                <!-- Default State -->
+                <div class="card shadow-sm">
+                    <div class="card-body text-center py-5">
+                        <i class="fas fa-landmark fa-5x text-primary mb-4" style="opacity: 0.3;"></i>
+                        <h4 class="text-muted mb-3">Government Scheme Recommender</h4>
+                        <p class="text-muted mb-4">Fill your farmer profile to discover:</p>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <div class="card border-primary">
+                                    <div class="card-body">
+                                        <i class="fas fa-money-bill-wave fa-2x text-success mb-2"></i>
+                                        <h6>Direct Benefits</h6>
+                                        <p class="small text-muted mb-0">PM-Kisan, subsidies, and financial support</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="card border-info">
+                                    <div class="card-body">
+                                        <i class="fas fa-shield-alt fa-2x text-primary mb-2"></i>
+                                        <h6>Insurance Schemes</h6>
+                                        <p class="small text-muted mb-0">Crop insurance and risk protection</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="card border-success">
+                                    <div class="card-body">
+                                        <i class="fas fa-tint fa-2x text-info mb-2"></i>
+                                        <h6>Irrigation Support</h6>
+                                        <p class="small text-muted mb-0">Drip/sprinkler subsidies</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="card border-warning">
+                                    <div class="card-body">
+                                        <i class="fas fa-cow fa-2x text-warning mb-2"></i>
+                                        <h6>Livestock Programs</h6>
+                                        <p class="small text-muted mb-0">Dairy and animal husbandry support</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script type="text/javascript">
+document.querySelector('form').addEventListener('submit', function() {
+    var btn = this.querySelector('button[type="submit"]');
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Finding Schemes...';
+    btn.disabled = true;
+});
+</script>
+{% endblock %}
